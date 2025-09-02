@@ -2,383 +2,287 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>EMA — Elephant Monitoring App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <link rel="icon" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" />
-  <meta name="theme-color" content="#ffffff"/>
-
-  <!-- Minimal, clean, mobile-first UI -->
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" />
   <style>
     :root {
       --bg: #ffffff;
-      --fg: #0f172a;        /* slate-900 */
-      --muted: #64748b;     /* slate-500 */
-      --accent: #0ea5e9;    /* sky-500 */
-      --accent-600:#0284c7; /* sky-600 */
-      --ring: rgba(14,165,233,.35);
-      --card: #f8fafc;      /* slate-50 */
-      --border: #e2e8f0;    /* slate-200 */
-      --ok: #16a34a;        /* green-600 */
-      --warn: #eab308;      /* amber-500 */
-      --err: #ef4444;       /* red-500 */
+      --fg: #0f172a; /* slate-900 */
+      --muted: #64748b; /* slate-500 */
+      --primary: #0ea5e9; /* sky-500 */
+      --primary-600: #0284c7; /* sky-600 */
+      --border: #e5e7eb; /* gray-200 */
+      --card: #f8fafc; /* slate-50 */
+      --success: #16a34a; /* green-600 */
+      --danger: #ef4444; /* red-500 */
     }
-    html, body { height: 100%; }
-    * { box-sizing: border-box; }
-    body {
+
+    html, body {
+      height: 100%;
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      color: var(--fg);
       background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
-    .center {
+
+    /* Centered mobile-first layout */
+    .container {
       min-height: 100dvh;
       display: grid;
       place-items: center;
       padding: 24px;
     }
-    .card {
-      width: min(700px, 92vw);
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      box-shadow: 0 12px 30px rgba(2,8,23,.06);
-      padding: 20px;
-    }
-    h1, h2, h3 { margin: 0 0 6px; }
-    h1 { font-size: 1.35rem; letter-spacing: .2px; }
-    p { margin: 6px 0; color: var(--muted); }
 
-    .stack { display: grid; gap: 14px; }
-    .row   { display: flex; gap: 10px; align-items: center; }
-    .between { display:flex; align-items:center; gap:12px; color: var(--muted); font-size: .92rem; }
-    .between::before, .between::after {
-      content:"";
-      height:1px; flex:1; background: var(--border);
-    }
-    label { font-size: .9rem; color: var(--muted); display:block; margin-bottom:6px; }
-    input, select, button, .btn {
-      font: inherit;
-      border-radius: 12px;
+    .card {
+      width: min(520px, 94vw);
+      background: var(--card);
       border: 1px solid var(--border);
-      padding: 12px 14px;
-      outline: none;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(2, 8, 23, 0.06);
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle { color: var(--muted); margin-bottom: 18px; }
+
+    .row { display: grid; gap: 12px; margin: 12px 0; }
+
+    label { font-size: .9rem; font-weight: 600; }
+
+    input[type="text"], input[type="email"], input[type="tel"], select {
       width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: box-shadow .2s ease, border-color .2s ease;
     }
-    input:focus, select:focus, button:focus {
-      box-shadow: 0 0 0 4px var(--ring);
-      border-color: var(--accent);
-    }
-    input::placeholder { color: #94a3b8; }
-    button, .btn {
-      background: var(--accent);
-      color: #fff;
-      border: none;
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(14,165,233,.15); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
       cursor: pointer;
-      transition: transform .05s ease, background .2s ease;
+      font-weight: 700;
+      transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
     }
-    button:hover { background: var(--accent-600); }
-    button:active { transform: translateY(1px); }
-    .btn-secondary {
-      background: #fff; color: var(--fg); border: 1px solid var(--border);
-    }
-    .btn-ghost {
-      background: transparent; border: 1px dashed var(--border); color: var(--muted);
-    }
-    .inline-note { font-size:.85rem; color:#94a3b8; }
-    .muted { color: #94a3b8; }
-    .fade {
-      opacity: 0;
-      transform: translateY(6px);
-      animation: fadein .45s .1s ease forwards;
-    }
-    @keyframes fadein { to { opacity: 1; transform: translateY(0); } }
+    .btn:hover { box-shadow: 0 6px 16px rgba(2, 8, 23, 0.06); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: linear-gradient(180deg, var(--primary), var(--primary-600)); color: #fff; border-color: transparent; }
+    .btn.ghost { background: #fff; }
+    .btn.full { width: 100%; }
+    .btn.muted { color: var(--muted); }
+
+    .hr-with-text { display: grid; grid-template-columns: 1fr auto 1fr; place-items: center; gap: 8px; margin: 16px 0; color: var(--muted); }
+    .hr-with-text::before, .hr-with-text::after { content: ""; height: 1px; background: var(--border); width: 100%; }
+
+    .inline { display: flex; align-items: center; gap: 10px; }
+    .muted { color: var(--muted); }
+
+    .checkbox { display: inline-flex; align-items: center; gap: 10px; user-select: none; }
+    .checkbox input { width: 18px; height: 18px; }
 
     /* Splash */
     #splash {
-      position: fixed; inset: 0; display: grid; place-items: center;
-      background: #fff; z-index: 50; transition: opacity .5s ease;
+      position: fixed; inset: 0; background: #fff; display: grid; place-items: center; z-index: 50;
+      transition: opacity .5s ease; opacity: 1;
     }
-    #splash.hidden { opacity: 0; pointer-events: none; }
+    #splash.fade { opacity: 0; pointer-events: none; }
+    .splash-card { text-align: center; }
+    .splash-logo { width: 84px; height: 84px; border-radius: 20px; }
+    .splash-title { font-weight: 900; margin-top: 12px; font-size: 1.5rem; }
+    .splash-ad { margin-top: 8px; color: var(--muted); font-size: .95rem; }
 
-    .logo {
-      width: 84px; height: 84px; border-radius: 18px; object-fit: cover; display:block; margin: 0 auto 10px;
-      box-shadow: 0 10px 24px rgba(2,8,23,.08);
-    }
-    .title { font-weight: 700; font-size: 1.6rem; text-align:center; }
-    .subtitle { text-align:center; color: var(--muted); }
+    /* Modal */
+    .modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 40; }
+    .modal.open { display: flex; }
+    .modal .backdrop { position: absolute; inset: 0; background: rgba(2,8,23,.4); }
+    .modal .panel { position: relative; width: min(680px, 94vw); max-height: 90vh; overflow: auto; background: #fff; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 20px 60px rgba(2,8,23,.25); padding: 22px; }
+    .modal .close { position: absolute; right: 12px; top: 12px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; cursor: pointer; }
 
-    /* Grid for login buttons */
-    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 480px){ .grid2 { grid-template-columns: 1fr; } }
+    /* Register Subpage */
+    #registerView { display: none; }
+    #registerView.show { display: block; }
 
-    /* Checkbox */
-    .checkbox { display:flex; gap:10px; align-items:center; color: var(--muted); }
-    .checkbox input { width:auto; }
+    .avatar-uploader { display: grid; place-items: center; padding: 14px; border: 1px dashed var(--border); border-radius: 16px; background: #fff; cursor: pointer; }
+    .avatar-uploader img { width: 96px; height: 96px; border-radius: 999px; object-fit: cover; display: block; }
+    .avatar-uploader .plus { width: 96px; height: 96px; border-radius: 999px; display: grid; place-items: center; background: var(--card); font-size: 2rem; color: var(--muted); border: 1px solid var(--border); }
 
-    /* Modal / Sheet */
-    .modal {
-      position: fixed; inset: 0; display:none; place-items: center; background: rgba(2,8,23,.35);
-      z-index: 60; padding: 16px;
-    }
-    .modal.open { display:grid; }
-    .modal .panel {
-      background:#fff;border-radius:20px; width:min(820px,94vw); max-height:92vh; overflow:auto; padding:18px;
-      box-shadow: 0 14px 40px rgba(2,8,23,.2);
-    }
-    .modal .panel h2 { font-size:1.1rem; }
-    .modal .close-x {
-      position:absolute; right:14px; top:10px; background:transparent; border:none; font-size:22px; cursor:pointer; color:#334155;
-    }
+    /* Camera Scan */
+    .scan-frame { position: relative; }
+    .scan-video { width: 100%; border-radius: 16px; background: #000; }
+    .scan-overlay { position: absolute; inset: 0; border-radius: 16px; pointer-events: none; }
+    .scan-box { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 80%; aspect-ratio: 16/9; border: 3px solid rgba(14,165,233,.9); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,.4); }
 
-    /* ID Card preview canvas holder */
-    .idcard-wrap { display:grid; gap:10px; justify-items:center; }
-    canvas#idcard { width: 100%; max-width: 520px; border-radius: 16px; border:1px solid var(--border); }
+    /* Toast */
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #111827; color: #fff; padding: 12px 16px; border-radius: 12px; display: none; z-index: 60; }
+    .toast.show { display: block; }
 
-    /* Camera scan area */
-    .camera-wrap { position: relative; border-radius: 16px; overflow: hidden; }
-    video#camera { width: min(560px, 92vw); border-radius: 16px; background: #000; }
-    .scan-box {
-      position: absolute; inset: 12% 10%;
-      border: 3px solid rgba(14,165,233,.8);
-      border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,.2) inset;
-      pointer-events: none;
-    }
+    /* ID Card preview */
+    .idcard-wrap { display: grid; gap: 8px; }
+    .idcard-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-    .error { color: var(--err); font-size: .92rem; }
-    .good  { color: var(--ok);  font-size: .92rem; }
-
-    /* Divider "or" */
-    .or { margin: 4px 0; }
-
-    /* Subpage (Register) slide-in */
-    .subpage {
-      position: relative;
-      display: none;
-      animation: slideIn .25s ease forwards;
-    }
-    @keyframes slideIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:none; } }
-
-    .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip: rect(0 0 0 0); white-space:nowrap;}
+    /* Helpers */
+    .hidden { display: none !important; }
   </style>
-
-  <!-- ZXing (QR + Data Matrix scanning) -->
-  <script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"></script>
-  <!-- QR generator -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <!-- DataMatrix generator via BWIP-JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bwip-js@3.4.4/dist/bwip-js-min.js"></script>
-
-  <!-- PWA: create a manifest on the fly and register a simple Service Worker -->
-  <script>
-    (function makeManifest(){
-      const manifest = {
-        name: "EMA — Elephant Monitoring App",
-        short_name: "EMA",
-        start_url: "./index.html",
-        display: "standalone",
-        background_color: "#ffffff",
-        theme_color: "#ffffff",
-        icons: [
-          {"src":"https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png","sizes":"512x512","type":"image/png"}
-        ]
-      };
-      const blob = new Blob([JSON.stringify(manifest)], {type:"application/manifest+json"});
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("link");
-      link.rel = "manifest"; link.href = url;
-      document.head.appendChild(link);
-    })();
-
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", async () => {
-        const swCode = `
-          const CACHE = "ema-pwa-v1";
-          const ASSETS = ["./","./index.html"];
-          self.addEventListener("install", (e)=> {
-            e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));
-          });
-          self.addEventListener("activate", (e)=> e.waitUntil(self.clients.claim()));
-          self.addEventListener("fetch", (e)=> {
-            e.respondWith(
-              caches.match(e.request).then(res => res || fetch(e.request).then(r=>{
-                const copy = r.clone();
-                caches.open(CACHE).then(c=>c.put(e.request, copy)).catch(()=>{});
-                return r;
-              }).catch(()=>res))
-            );
-          });
-        `;
-        const blob = new Blob([swCode], {type:"text/javascript"});
-        const swURL = URL.createObjectURL(blob);
-        try { await navigator.serviceWorker.register(swURL); } catch {}
-      });
-    }
-  </script>
 </head>
 <body>
-
   <!-- Splash (2 seconds) -->
-  <div id="splash" role="dialog" aria-label="Splash">
-    <div class="card" style="text-align:center; padding:28px 22px;">
-      <img class="logo" alt="EMA logo"
-           src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" />
-      <div class="title">EMA — Elephant Monitoring App</div>
-      <p class="subtitle">Loading…</p>
-      <p class="inline-note">Sponsored message</p>
-      <p class="muted" style="font-size:.9rem">Protecting elephants with smarter data.</p>
+  <div id="splash">
+    <div class="splash-card">
+      <img class="splash-logo" src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" alt="EMA logo"/>
+      <div class="splash-title">EMA — Elephant Monitoring App</div>
+      <div class="splash-ad">🌿 Protecting giants. Loading…</div>
     </div>
   </div>
 
-  <!-- Login -->
-  <main class="center" id="main" aria-live="polite" style="display:none;">
-    <section class="card stack fade" id="loginCard">
-      <div style="text-align:center">
-        <img class="logo"
-             src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" alt="">
+  <div class="container">
+    <div class="card" id="loginCard">
+      <header>
         <h1>Welcome to EMA</h1>
-        <p>Secure login for field teams and partners.</p>
-      </div>
+        <div class="subtitle">Secure monitoring for field teams</div>
+      </header>
 
-      <!-- EMA ID -->
-      <div>
-        <label for="emaId"><strong>EMA ID</strong></label>
-        <input id="emaId" name="emaId" inputmode="latin-prose" autocomplete="one-time-code"
-               placeholder="XXXXXX-E" maxlength="8" />
-      </div>
-
-      <button id="btnLogin">Login</button>
-
-      <div class="between or">or</div>
-
-      <div class="grid2">
-        <button id="btnScan" class="btn-secondary">Scan the E-Card</button>
-        <button id="btnForgot" class="btn-secondary">Forgot ID</button>
-      </div>
-      <div style="text-align:center">
-        <button id="btnRegister" class="btn-ghost">Register</button>
-        <div class="inline-note" style="margin-top:6px; opacity:.6">still not registered?</div>
-      </div>
-
-      <label class="checkbox">
-        <input type="checkbox" id="saveLogin" />
-        <span>Save login data for fast loading</span>
-      </label>
-    </section>
-
-    <!-- Register Subpage -->
-    <section id="registerPage" class="card stack subpage" aria-hidden="true">
-      <div class="row" style="justify-content:space-between; gap:6px;">
-        <h1>Create your EMA account</h1>
-        <button class="btn-secondary" id="btnBackToLogin" style="width:auto;">← Back</button>
-      </div>
-
-      <div style="text-align:center;">
-        <button id="btnPickPhoto" class="btn-ghost" style="width:auto;">＋ Upload Profile Picture</button>
-        <input type="file" id="photoFile" accept="image/*" class="sr" />
-        <div id="photoPreviewWrap" style="margin-top:10px;"></div>
-      </div>
-
-      <div class="stack">
-        <div>
-          <label for="fullName">Full Name</label>
-          <input id="fullName" placeholder="Enter your full name" />
-          <div id="errName" class="error" style="display:none;">Name must be at least 5 characters.</div>
+      <!-- Login View -->
+      <div id="loginView">
+        <div class="row">
+          <label for="emaId">EMA ID</label>
+          <input id="emaId" type="text" inputmode="text" placeholder="XXXXXX-E" autocomplete="one-time-code" />
         </div>
-        <div>
-          <label for="phone">Phone Number</label>
-          <input id="phone" placeholder="+94XX XXX XXXX or 07X XXX XXXX" />
-          <div id="errPhone" class="error" style="display:none;">Enter a valid Sri Lankan phone number.</div>
-        </div>
-        <div>
-          <label for="email">Email</label>
-          <input id="email" type="email" placeholder="you@example.com" />
-          <div id="errEmail" class="error" style="display:none;">Enter a valid email address.</div>
-        </div>
+        <button id="btnLogin" class="btn primary full">Login</button>
 
-        <div class="grid2">
-          <div>
-            <label for="province">Province</label>
-            <select id="province"></select>
-          </div>
-          <div>
-            <label for="district">District</label>
-            <select id="district"><option value="">Select province first</option></select>
+        <div class="hr-with-text">— or —</div>
+
+        <div class="row">
+          <button id="btnScan" class="btn full">Scan the E‑Card</button>
+          <div class="muted" style="text-align:center; font-size:.92rem; opacity:.7;">still not registered?</div>
+          <div class="inline" style="justify-content:center; flex-wrap: wrap; gap: 10px;">
+            <button id="btnOpenRegister" class="btn ghost">Register</button>
+            <button id="btnForgot" class="btn ghost">Forgot ID</button>
           </div>
         </div>
-      </div>
 
-      <p class="inline-note" style="margin-top:8px;">
-        Please enter only valid and true information. Your account is checked before registering.
-      </p>
-
-      <button id="btnDoRegister">Register</button>
-    </section>
-  </main>
-
-  <!-- Modal: Registering + ID Card -->
-  <div class="modal" id="modalRegister">
-    <div class="panel stack">
-      <button class="close-x" id="closeRegX" title="Close">×</button>
-      <h2 id="regStatus">Registering…</h2>
-      <div class="idcard-wrap" id="idcardWrap" style="display:none;">
-        <canvas id="idcard" width="1000" height="600" aria-label="EMA ID Card Preview"></canvas>
-        <div class="row" style="justify-content:center;">
-          <a id="downloadCard" class="btn" download="EMA-ID.png">Download Card</a>
-          <button id="doneAfterReg" class="btn-secondary" style="width:auto;">Done</button>
-        </div>
-      </div>
-      <div id="yourIdText" class="good" style="display:none;"></div>
-    </div>
-  </div>
-
-  <!-- Modal: Scanner -->
-  <div class="modal" id="modalScan">
-    <div class="panel stack">
-      <button class="close-x" id="closeScanX" title="Close">×</button>
-      <h2>Scan your E-Card</h2>
-      <div class="camera-wrap">
-        <video id="camera" playsinline muted></video>
-        <div class="scan-box" aria-hidden="true"></div>
-      </div>
-      <p id="scanHint" class="inline-note">Align the card in the box. We’ll try QR first, then Data Matrix.</p>
-      <div id="scanMsg" class="muted"></div>
-    </div>
-  </div>
-
-  <!-- Modal: Forgot ID -->
-  <div class="modal" id="modalForgot">
-    <div class="panel stack">
-      <button class="close-x" id="closeForgotX" title="Close">×</button>
-      <h2>Recover your EMA ID</h2>
-
-      <div class="grid2">
-        <div>
-          <label for="fpProvince">Province</label>
-          <select id="fpProvince"></select>
-        </div>
-        <div>
-          <label for="fpDistrict">District</label>
-          <select id="fpDistrict"><option value="">Select province first</option></select>
+        <div class="row" style="margin-top: 10px;">
+          <label class="checkbox"><input id="saveLogin" type="checkbox"/> <span>Save login data for fast loading</span></label>
         </div>
       </div>
 
-      <div>
-        <label for="fpPhone">Phone Number</label>
-        <input id="fpPhone" placeholder="+94XX XXX XXXX or 07X XXX XXXX" />
-      </div>
+      <!-- Register Subpage -->
+      <div id="registerView">
+        <h2 style="margin:0 0 8px 0;">Create your EMA account</h2>
+        <div class="subtitle">Please enter only valid and true information. Your account is checked before registering.</div>
 
-      <button id="btnFindId">Find my ID</button>
-      <div id="forgotMsg" class="muted"></div>
+        <div class="row">
+          <label>Profile Picture</label>
+          <div id="avatarDrop" class="avatar-uploader">
+            <div class="plus">+</div>
+            <img id="avatarPreview" class="hidden" alt="Profile preview" />
+            <input id="avatarInput" type="file" accept="image/*" class="hidden"/>
+          </div>
+        </div>
+
+        <div class="row"><label for="fullName">Full Name</label><input id="fullName" type="text" placeholder="At least 5 characters" minlength="5"/></div>
+        <div class="row"><label for="phone">Phone Number</label><input id="phone" type="tel" placeholder="+94XX XXX XXXX or 07X XXX XXXX"/></div>
+        <div class="row"><label for="email">Email</label><input id="email" type="email" placeholder="you@example.com"/></div>
+
+        <div class="row">
+          <label for="province">Province</label>
+          <select id="province"></select>
+        </div>
+        <div class="row">
+          <label for="district">District</label>
+          <select id="district"><option value="">Select a province first</option></select>
+        </div>
+
+        <div class="row" style="margin-top: 6px;">
+          <button id="btnRegister" class="btn primary full">Register</button>
+          <button id="btnBackToLogin" class="btn full">Back to Login</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Firebase config (from your snippet) -->
+  <!-- Scanner Modal -->
+  <div class="modal" id="scanModal" aria-hidden="true">
+    <div class="backdrop"></div>
+    <div class="panel">
+      <button class="close" id="scanClose">✕</button>
+      <h3 style="margin-top:0;">Scan your EMA E‑Card</h3>
+      <div class="scan-frame">
+        <video id="scanVideo" class="scan-video" autoplay playsinline></video>
+        <canvas id="scanCanvas" class="hidden"></canvas>
+        <div class="scan-overlay">
+          <div class="scan-box"></div>
+        </div>
+      </div>
+      <div id="scanStatus" class="muted" style="margin-top:10px;">Align the card inside the box. Scanning QR/Data Matrix…</div>
+    </div>
+  </div>
+
+  <!-- Generic Modal for Registering & ID Card -->
+  <div class="modal" id="registerModal" aria-hidden="true">
+    <div class="backdrop"></div>
+    <div class="panel">
+      <button class="close" id="regClose">✕</button>
+      <div id="registering">
+        <h3 style="margin-top:0;">Registering…</h3>
+        <div class="muted">Please wait while we save your details securely.</div>
+      </div>
+      <div id="idCardSection" class="hidden">
+        <h3 style="margin: 0 0 6px 0;">Your EMA ID</h3>
+        <div id="yourIdText" style="font-weight:700; margin-bottom:8px;"></div>
+        <div class="idcard-wrap">
+          <canvas id="idCardCanvas" width="880" height="520" style="width:100%; border-radius:16px; border:1px solid var(--border);"></canvas>
+          <div class="idcard-actions">
+            <button id="btnDownloadCard" class="btn">Download as PNG</button>
+            <button id="btnDone" class="btn primary">Done</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot ID Modal -->
+  <div class="modal" id="forgotModal" aria-hidden="true">
+    <div class="backdrop"></div>
+    <div class="panel">
+      <button class="close" id="forgotClose">✕</button>
+      <h3 style="margin-top:0;">Recover your ID</h3>
+      <div class="row"><label for="forgotPhone">Phone Number</label><input id="forgotPhone" type="tel" placeholder="+94XX XXX XXXX or 07X XXX XXXX"/></div>
+      <div class="row"><label for="forgotProvince">Province</label><select id="forgotProvince"></select></div>
+      <div class="row"><label for="forgotDistrict">District</label><select id="forgotDistrict"><option value="">Select a province first</option></select></div>
+      <div class="row"><button id="btnFindId" class="btn primary full">Find my ID</button></div>
+      <div id="forgotResult" class="muted"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- External libs for codes -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-Mw46Xo9dOmCGHMMsDffmJ2h/hlkPCF1kqv3Z6JtniGv5gYkrHBIKk4nU1WOrhW8W5m8b+7mJf5vEW8Xc1Y0A4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bwip-js@3.4.3/dist/bwip-js-min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+  <!-- Firebase -->
   <script type="module">
-    // Import the functions you need from the SDKs you need
+    // Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
-    // Your web app's Firebase configuration
+    // Config (provided)
     const firebaseConfig = {
       apiKey: "AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
       authDomain: "project-ema-998cd.firebaseapp.com",
@@ -386,432 +290,286 @@
       storageBucket: "project-ema-998cd.firebasestorage.app",
       messagingSenderId: "356739398551",
       appId: "1:356739398551:web:df3f900d8d7a07c38e22d2",
-      measurementId: "G-RHDKXHXFLE"
+      measurementId: "G-RHDKXHXFLE",
+      databaseURL: "https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app/"
     };
 
     const app = initializeApp(firebaseConfig);
-    try { getAnalytics(app); } catch {}
+    try { getAnalytics(app); } catch (_) {}
+    const db = getDatabase(app);
 
-    // ---------- App Logic ----------
-    const DB_ROOT = "https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app";
+    // --- UI helpers ---
+    const $ = (sel) => document.querySelector(sel);
+    const toast = (msg, ms=2200) => { const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), ms); };
+    const openModal = (id) => $(id).classList.add('open');
+    const closeModal = (id) => $(id).classList.remove('open');
 
-    // Provinces & Districts (Sri Lanka)
-    const PROV_DIST = {
-      "Western": ["Colombo","Gampaha","Kalutara"],
+    // Splash fade after 2s
+    window.addEventListener('load', () => {
+      setTimeout(()=> $('#splash').classList.add('fade'), 2000);
+    });
+
+    // Province/District data (Sri Lanka)
+    const PROVINCES = {
       "Central": ["Kandy","Matale","Nuwara Eliya"],
-      "Southern": ["Galle","Matara","Hambantota"],
-      "Northern": ["Jaffna","Kilinochchi","Mannar","Vavuniya","Mullaitivu"],
-      "Eastern": ["Trincomalee","Batticaloa","Ampara"],
-      "North Western": ["Kurunegala","Puttalam"],
+      "Eastern": ["Ampara","Batticaloa","Trincomalee"],
       "North Central": ["Anuradhapura","Polonnaruwa"],
+      "Northern": ["Jaffna","Kilinochchi","Mannar","Mullaitivu","Vavuniya"],
+      "North Western": ["Kurunegala","Puttalam"],
+      "Sabaragamuwa": ["Kegalle","Ratnapura"],
+      "Southern": ["Galle","Hambantota","Matara"],
       "Uva": ["Badulla","Monaragala"],
-      "Sabaragamuwa": ["Ratnapura","Kegalle"]
+      "Western": ["Colombo","Gampaha","Kalutara"]
     };
 
-    const $ = (q)=> document.querySelector(q);
-    const $$ = (q)=> Array.from(document.querySelectorAll(q));
-
-    const splash = $("#splash");
-    const main = $("#main");
-    const loginCard = $("#loginCard");
-    const registerPage = $("#registerPage");
-
-    const emaId = $("#emaId");
-    const btnLogin = $("#btnLogin");
-    const btnScan = $("#btnScan");
-    const btnRegister = $("#btnRegister");
-    const btnForgot = $("#btnForgot");
-    const saveLogin = $("#saveLogin");
-
-    const btnBackToLogin = $("#btnBackToLogin");
-    const btnPickPhoto = $("#btnPickPhoto");
-    const inputPhoto = $("#photoFile");
-    const photoPreviewWrap = $("#photoPreviewWrap");
-
-    const fullName = $("#fullName");
-    const phone = $("#phone");
-    const email = $("#email");
-    const province = $("#province");
-    const district = $("#district");
-
-    const errName = $("#errName");
-    const errPhone = $("#errPhone");
-    const errEmail = $("#errEmail");
-
-    const modalRegister = $("#modalRegister");
-    const regStatus = $("#regStatus");
-    const idcardWrap = $("#idcardWrap");
-    const idcardCanvas = $("#idcard");
-    const downloadCard = $("#downloadCard");
-    const doneAfterReg = $("#doneAfterReg");
-    const yourIdText = $("#yourIdText");
-
-    const modalScan = $("#modalScan");
-    const camera = $("#camera");
-    const closeScanX = $("#closeScanX");
-    const scanMsg = $("#scanMsg");
-
-    const modalForgot = $("#modalForgot");
-    const closeForgotX = $("#closeForgotX");
-    const fpProvince = $("#fpProvince");
-    const fpDistrict = $("#fpDistrict");
-    const fpPhone = $("#fpPhone");
-    const btnFindId = $("#btnFindId");
-    const forgotMsg = $("#forgotMsg");
-
-    // Splash → Login
-    setTimeout(()=>{ splash.classList.add("hidden"); main.style.display="grid"; }, 2000);
-
-    // Populate provinces
-    function fillProvinces(sel) {
-      sel.innerHTML = `<option value="">Select Province</option>` +
-        Object.keys(PROV_DIST).map(p=>`<option>${p}</option>`).join("");
+    function fillProvinces(selectEl){
+      selectEl.innerHTML = '<option value="">Select province</option>' + Object.keys(PROVINCES).map(p=>`<option value="${p}">${p}</option>`).join('');
     }
-    function fillDistricts(selProv, selDist) {
-      const p = selProv.value;
-      selDist.innerHTML = '<option value="">Select District</option>';
-      if (p && PROV_DIST[p]) {
-        selDist.innerHTML += PROV_DIST[p].map(d=>`<option>${d}</option>`).join("");
-      }
+    function fillDistricts(selectEl, province){
+      const list = PROVINCES[province] || [];
+      selectEl.innerHTML = list.length ? list.map(d=>`<option value="${d}">${d}</option>`).join('') : '<option value="">Select a province first</option>';
     }
+
+    // Elements
+    const emaId = $('#emaId');
+    const btnLogin = $('#btnLogin');
+    const btnScan = $('#btnScan');
+    const btnOpenRegister = $('#btnOpenRegister');
+    const btnForgot = $('#btnForgot');
+    const saveLogin = $('#saveLogin');
+
+    const registerView = $('#registerView');
+    const loginView = $('#loginView');
+    const btnRegister = $('#btnRegister');
+    const btnBackToLogin = $('#btnBackToLogin');
+
+    const province = $('#province');
+    const district = $('#district');
+    const forgotProvince = $('#forgotProvince');
+    const forgotDistrict = $('#forgotDistrict');
+
     fillProvinces(province);
-    fillProvinces(fpProvince);
-    province.addEventListener("change", ()=> fillDistricts(province, district));
-    fpProvince.addEventListener("change", ()=> fillDistricts(fpProvince, fpDistrict));
+    fillProvinces(forgotProvince);
 
-    // Photo handling
-    btnPickPhoto.addEventListener("click", ()=> inputPhoto.click());
-    let profileBlobUrl = null;
-    inputPhoto.addEventListener("change", ()=>{
-      const f = inputPhoto.files?.[0];
-      if (!f) return;
-      if (profileBlobUrl) URL.revokeObjectURL(profileBlobUrl);
-      profileBlobUrl = URL.createObjectURL(f);
-      photoPreviewWrap.innerHTML = `<img src="${profileBlobUrl}" alt="Profile preview" style="width:110px;height:110px;border-radius:999px;object-fit:cover;border:2px solid #e2e8f0; box-shadow:0 6px 16px rgba(2,8,23,.08);" />`;
+    province.addEventListener('change', () => fillDistricts(district, province.value));
+    forgotProvince.addEventListener('change', () => fillDistricts(forgotDistrict, forgotProvince.value));
+
+    // Avatar uploader
+    const avatarDrop = $('#avatarDrop');
+    const avatarInput = $('#avatarInput');
+    const avatarPreview = $('#avatarPreview');
+    avatarDrop.addEventListener('click', ()=> avatarInput.click());
+    avatarInput.addEventListener('change', (e)=>{
+      const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ avatarPreview.src=r.result; avatarPreview.classList.remove('hidden'); avatarDrop.querySelector('.plus').classList.add('hidden'); }; r.readAsDataURL(f);
     });
+
+    // Toggle Register view
+    btnOpenRegister.addEventListener('click', ()=>{ loginView.style.display='none'; registerView.classList.add('show'); });
+    btnBackToLogin.addEventListener('click', ()=>{ registerView.classList.remove('show'); loginView.style.display='block'; });
 
     // Validators
-    const rxName = /^.{5,}$/;
-    const rxPhone = /^(?:\+94\d{2}\s?\d{3}\s?\d{4}|0[7]\d\s?\d{3}\s?\d{4})$/;
-    const rxEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const nameOk = (v)=> v && v.trim().length>=5;
+    const phoneOk = (v)=> /^(?:\+94\d{2}\s?\d{3}\s?\d{4}|0\d{2}\s?\d{3}\s?\d{4})$/.test(v.trim());
+    const emailOk = (v)=> /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
-    function validateRegister() {
-      let ok = true;
-      errName.style.display = rxName.test(fullName.value.trim()) ? "none" : (ok=false,"block");
-      errPhone.style.display = rxPhone.test(phone.value.trim()) ? "none" : (ok=false,"block");
-      errEmail.style.display = rxEmail.test(email.value.trim()) ? "none" : (ok=false,"block");
-      if (!province.value) { province.focus(); ok=false; }
-      if (!district.value) { district.focus(); ok=false; }
-      return ok;
+    // Generate EMA ID: 6 digits + '-E'
+    const genId = ()=> String(Math.floor(100000 + Math.random()*900000)) + '-E';
+
+    // Save to cookies/localStorage
+    function persistId(id){
+      try { localStorage.setItem('emaId', id); } catch(_){}
+      try { document.cookie = `emaId=${encodeURIComponent(id)}; path=/; max-age=${60*60*24*365}`; } catch(_){}
     }
 
-    // Navigation between Login ↔ Register subpage
-    btnRegister.addEventListener("click", ()=>{
-      loginCard.style.display = "none";
-      registerPage.style.display = "grid";
-      registerPage.setAttribute("aria-hidden", "false");
-    });
-    btnBackToLogin.addEventListener("click", ()=>{
-      registerPage.style.display = "none";
-      registerPage.setAttribute("aria-hidden", "true");
-      loginCard.style.display = "grid";
-    });
+    // --- Register flow ---
+    const registerModal = $('#registerModal');
+    const registering = $('#registering');
+    const idCardSection = $('#idCardSection');
+    const yourIdText = $('#yourIdText');
+    const idCardCanvas = $('#idCardCanvas');
+    const btnDownloadCard = $('#btnDownloadCard');
+    const btnDone = $('#btnDone');
+    $('#regClose').addEventListener('click', ()=> closeModal('#registerModal'));
 
-    // Generate EMA ID like XXXXXX-E (numbers only prefix)
-    function generateEmaId() {
-      const n = Math.floor(100000 + Math.random()*900000); // 6 digits
-      return `${n}-E`;
+    async function writeUser(id, payload){
+      const path = `users/${id}`; // store by ID key
+      await set(ref(db, path), payload);
     }
 
-    // Draw ID Card (canvas) and return blob url for download
-    async function drawIdCard({id, name, phone, email, province, district, photoUrl}) {
-      const c = idcardCanvas;
-      const ctx = c.getContext("2d");
-
-      // Clear
-      ctx.clearRect(0,0,c.width,c.height);
-
-      // Background
-      const grad = ctx.createLinearGradient(0,0,c.width,0);
-      grad.addColorStop(0, "#f8fafc");
-      grad.addColorStop(1, "#eef2ff");
-      ctx.fillStyle = grad;
-      roundRect(ctx, 0,0,c.width,c.height,24, true, false);
-
-      // Header bar
-      ctx.fillStyle = "#0ea5e9";
-      roundRect(ctx, 0,0,c.width,120,24, true, false);
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 44px system-ui, -apple-system, Segoe UI, Roboto";
-      ctx.fillText("EMA — Elephant Monitoring App", 28, 76);
-
-      // Profile
-      if (photoUrl) {
-        const img = await loadImage(photoUrl);
-        // circle crop
-        const cx = 120, cy = 260, r = 90;
-        ctx.save();
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.closePath(); ctx.clip();
-        ctx.drawImage(img, cx-r, cy-r, r*2, r*2);
-        ctx.restore();
-        // circle ring
-        ctx.strokeStyle = "#0ea5e9"; ctx.lineWidth = 6;
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
-      }
-
-      // Text fields
-      ctx.fillStyle = "#0f172a";
-      ctx.font = "bold 40px system-ui";
-      ctx.fillText(name || "", 240, 230);
-      ctx.font = "24px system-ui";
-      ctx.fillText(`ID: ${id}`, 240, 270);
-      ctx.fillText(`Phone: ${phone}`, 240, 310);
-      ctx.fillText(`Email: ${email}`, 240, 350);
-      ctx.fillText(`Province: ${province}`, 240, 390);
-      ctx.fillText(`District: ${district}`, 240, 430);
-
-      // QR (right)
-      const qrCanvas = document.createElement("canvas");
-      await new Promise((res, rej)=> QRCode.toCanvas(qrCanvas, id, {width:240, margin:1}, (e)=> e?rej(e):res()));
-      ctx.drawImage(qrCanvas, c.width-280, 160, 220, 220);
-
-      // DataMatrix (bottom)
-      const dmCanvas = document.createElement("canvas");
-      try {
-        BWIPJS.toCanvas(dmCanvas, {
-          bcid: 'datamatrix',
-          text: id,
-          scale: 3,
-          padding: 0
-        });
-        // bottom center
-        ctx.drawImage(dmCanvas, (c.width - dmCanvas.width)/2, c.height-dmCanvas.height-24);
-      } catch(e) {
-        // ignore if failed
-      }
-
-      // Footer line
-      ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(24, 460); ctx.lineTo(c.width-24, 460); ctx.stroke();
-      ctx.fillStyle = "#64748b"; ctx.font="20px system-ui";
-      ctx.fillText("Show this card or scan the codes to log in quickly.", 28, 494);
-
-      // Prepare download link
-      const blob = await new Promise(res=> c.toBlob(res, "image/png", 0.95));
-      const url = URL.createObjectURL(blob);
-      downloadCard.href = url;
-      return url;
-    }
-
-    function roundRect(ctx, x, y, w, h, r, fill, stroke){
-      if (typeof r === 'number') r = {tl:r,tr:r,br:r,bl:r};
-      ctx.beginPath();
-      ctx.moveTo(x+r.tl, y);
-      ctx.lineTo(x+w-r.tr, y);
-      ctx.quadraticCurveTo(x+w, y, x+w, y+r.tr);
-      ctx.lineTo(x+w, y+h-r.br);
-      ctx.quadraticCurveTo(x+w, y+h, x+w-r.br, y+h);
-      ctx.lineTo(x+r.bl, y+h);
-      ctx.quadraticCurveTo(x, y+h, x, y+h-r.bl);
-      ctx.lineTo(x, y+r.tl);
-      ctx.quadraticCurveTo(x, y, x+r.tl, y);
-      ctx.closePath();
-      if (fill) ctx.fill();
-      if (stroke) ctx.stroke();
-    }
-    function loadImage(src){
-      return new Promise((res, rej)=>{ const i=new Image(); i.crossOrigin="anonymous"; i.onload=()=>res(i); i.onerror=rej; i.src=src; });
-    }
-
-    // Register → store in Firebase Realtime DB under /users/{XXXXXX-E}
-    $("#btnDoRegister").addEventListener("click", async ()=>{
-      if (!validateRegister()) return;
-
-      modalRegister.classList.add("open");
-      regStatus.textContent = "Registering…";
-      idcardWrap.style.display = "none";
-      yourIdText.style.display = "none";
-
-      const id = generateEmaId();
-      // Prepare data
+    btnRegister.addEventListener('click', async ()=>{
       const data = {
-        id,
-        name: fullName.value.trim(),
-        phone: phone.value.trim(),
-        email: email.value.trim(),
+        name: $('#fullName').value.trim(),
+        phone: $('#phone').value.trim(),
+        email: $('#email').value.trim(),
         province: province.value,
         district: district.value,
-        createdAt: new Date().toISOString()
+        avatar: avatarPreview.src || '' // base64 for demo
       };
+      if(!nameOk(data.name)) return toast('Enter a valid full name (≥ 5 characters)');
+      if(!phoneOk(data.phone)) return toast('Enter a valid Sri Lankan phone number');
+      if(!emailOk(data.email)) return toast('Enter a valid email');
+      if(!data.province) return toast('Select a province');
+      if(!data.district) return toast('Select a district');
 
-      // Upload profile photo to base64 (store inline under user for demo purposes)
-      if (profileBlobUrl) {
-        const b64 = await fetch(profileBlobUrl).then(r=>r.blob()).then(b=> blobToDataURL(b));
-        data.photo = b64;
-      }
+      const id = genId();
+
+      openModal('#registerModal');
+      registering.classList.remove('hidden');
+      idCardSection.classList.add('hidden');
 
       try {
-        // Save at /users/{id}.json
-        const resp = await fetch(`${DB_ROOT}/users/${encodeURIComponent(id)}.json`, {
-          method: "PUT",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify(data)
-        });
-        if (!resp.ok) throw new Error("Failed to save user");
-
-        regStatus.textContent = `"${id}" is your ID for logging into EMA`;
+        await writeUser(id, { ...data, createdAt: Date.now(), id });
+        // Build ID card
+        await buildIdCard({ id, ...data });
         yourIdText.textContent = `${id} is your ID for logging into EMA`;
-        yourIdText.style.display = "block";
-
-        // Build card
-        const photoUrl = data.photo ? data.photo : profileBlobUrl;
-        await drawIdCard({
-          id,
-          name: data.name,
-          phone: data.phone,
-          email: data.email,
-          province: data.province,
-          district: data.district,
-          photoUrl
-        });
-
-        idcardWrap.style.display = "grid";
+        registering.classList.add('hidden');
+        idCardSection.classList.remove('hidden');
       } catch (e) {
-        regStatus.textContent = "Registration failed. Please try again.";
+        console.error(e); toast('Could not register. Please try again.'); closeModal('#registerModal');
       }
     });
 
-    function blobToDataURL(blob){
-      return new Promise((res)=>{
-        const r = new FileReader();
-        r.onload = ()=> res(r.result);
-        r.readAsDataURL(blob);
-      });
+    btnDownloadCard.addEventListener('click', ()=>{
+      const a=document.createElement('a'); a.download='EMA-ID.png'; a.href=idCardCanvas.toDataURL('image/png'); a.click();
+    });
+
+    btnDone.addEventListener('click', ()=>{ closeModal('#registerModal'); registerView.classList.remove('show'); loginView.style.display='block'; if(yourIdText.textContent){ const id = yourIdText.textContent.split(' ')[0]; emaId.value = id; toast('ID filled from registration'); } });
+
+    // Draw ID card with QR + Data Matrix
+    async function buildIdCard({ id, name, phone, email, province, district, avatar }){
+      const ctx = idCardCanvas.getContext('2d');
+      // Background
+      ctx.clearRect(0,0,idCardCanvas.width,idCardCanvas.height);
+      const W=idCardCanvas.width,H=idCardCanvas.height;
+      const grad = ctx.createLinearGradient(0,0,W,0); grad.addColorStop(0,'#e0f2fe'); grad.addColorStop(.6,'#f8fafc'); grad.addColorStop(1,'#ffffff');
+      ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+      // Card frame
+      ctx.fillStyle='#0ea5e9'; ctx.fillRect(0,0,8,H);
+      // Title
+      ctx.fillStyle='#0f172a'; ctx.font='bold 28px system-ui, -apple-system, Segoe UI'; ctx.fillText('EMA — Elephant Monitoring App', 24, 40);
+      // Avatar circle
+      const AVX=60, AVY=100, AVR=64;
+      if(avatar){ await drawCircleImage(ctx, avatar, AVX+AVR, AVY+AVR, AVR); }
+      // Text
+      ctx.font='700 26px system-ui'; ctx.fillText(name, 160, 120);
+      ctx.font='16px system-ui'; ctx.fillStyle='#334155';
+      ctx.fillText(`ID: ${id}`, 160, 150);
+      ctx.fillText(`Phone: ${phone}`, 160, 176);
+      ctx.fillText(`Email: ${email}`, 160, 202);
+      ctx.fillText(`Province: ${province}`, 160, 228);
+      ctx.fillText(`District: ${district}`, 160, 254);
+
+      // QR Code (right)
+      const qrWrap = document.createElement('div');
+      const qr = new QRCode(qrWrap, { text: id, width: 180, height: 180, margin: 1 });
+      await new Promise(r=> setTimeout(r, 0)); // allow render
+      const qrImg = qrWrap.querySelector('img') || qrWrap.querySelector('canvas');
+      await drawImageOnCanvas(ctx, qrImg, W-220, 80, 180, 180);
+
+      // Data Matrix (bottom center)
+      const dmCanvas = document.createElement('canvas');
+      try { bwipjs.toCanvas(dmCanvas, { bcid:'datamatrix', text:id, scale:3, padding:2 }); } catch(e){ console.warn('DataMatrix gen error', e); }
+      await drawImageOnCanvas(ctx, dmCanvas, (W-300)/2, H-130, 300, 90);
+
+      // Footer
+      ctx.fillStyle='#0ea5e9'; ctx.fillRect(0,H-8,W,8);
     }
 
-    doneAfterReg.addEventListener("click", ()=>{
-      modalRegister.classList.remove("open");
-      // Go back to login with prefilled ID?
-      // Keep on login page.
-    });
-    $("#closeRegX").addEventListener("click", ()=> modalRegister.classList.remove("open"));
+    function drawImageOnCanvas(ctx, el, x,y,w,h){
+      return new Promise((res)=>{ const img = new Image(); img.crossOrigin='anonymous'; img.onload=()=>{ ctx.drawImage(img, x,y,w,h); res(); }; img.src = el.toDataURL ? el.toDataURL('image/png') : el.src; });
+    }
 
-    // Scanner (QR → Data Matrix)
-    let codeReader = null;
-    let currentStream = null;
-    btnScan.addEventListener("click", async ()=>{
-      modalScan.classList.add("open");
-      scanMsg.textContent = "Opening camera…";
+    function drawCircleImage(ctx, src, cx, cy, r){
+      return new Promise((res)=>{ const img=new Image(); img.crossOrigin='anonymous'; img.onload=()=>{ ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.closePath(); ctx.clip(); ctx.drawImage(img, cx-r, cy-r, r*2, r*2); ctx.restore(); res(); }; img.src=src; });
+    }
+
+    // --- Scanner ---
+    const scanModal = $('#scanModal');
+    const scanVideo = $('#scanVideo');
+    const scanCanvas = $('#scanCanvas');
+    const scanStatus = $('#scanStatus');
+    let scanStream = null; let scanning=false;
+
+    async function startScan(){
+      openModal('#scanModal');
       try {
-        codeReader = new ZXing.BrowserMultiFormatReader();
-        const videoInputDevices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-        // Prefer environment camera
-        const backCam = videoInputDevices.find(d => /back|rear|environment/i.test(d.label)) || videoInputDevices[0];
+        scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        scanVideo.srcObject = scanStream; scanning=true; loopScan();
+      } catch (e) { scanStatus.textContent='Camera access denied. Please allow camera.'; }
+    }
 
-        const constraints = {
-          audio: false,
-          video: backCam ? { deviceId: backCam.deviceId, facingMode: "environment" } : { facingMode: "environment" }
-        };
-        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-        camera.srcObject = currentStream;
-        await camera.play();
+    async function stopScan(){
+      scanning=false; if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+    }
 
-        scanMsg.textContent = "Scanning…";
-        // Decode loop (accept QR or Data Matrix)
-        codeReader.decodeFromVideoElement(camera, (result, err) => {
-          if (result) {
-            const text = (result.getText ? result.getText() : result.text) || "";
-            if (/^\d{6}-E$/.test(text)) {
-              stopCamera();
-              modalScan.classList.remove("open");
-              emaId.value = text;
-            } else {
-              scanMsg.textContent = "Code detected but not an EMA ID. Keep aligning…";
+    async function loopScan(){
+      const hasBarcodeDetector = 'BarcodeDetector' in window;
+      const detector = hasBarcodeDetector ? new BarcodeDetector({ formats: ['qr_code','data_matrix'] }) : null;
+      const ctx = scanCanvas.getContext('2d');
+      while(scanning){
+        if(scanVideo.readyState >= 2){
+          scanCanvas.width = scanVideo.videoWidth; scanCanvas.height = scanVideo.videoHeight;
+          ctx.drawImage(scanVideo, 0,0, scanCanvas.width, scanCanvas.height);
+          try {
+            let idText = '';
+            if(detector){
+              const codes = await detector.detect(scanCanvas);
+              if(codes && codes.length){ idText = (codes[0].rawValue||'').trim(); }
             }
-          } else if (err) {
-            // keep trying silently
-          }
-        });
-      } catch (e) {
-        scanMsg.textContent = "Could not access camera. Check permissions.";
-      }
-    });
-
-    function stopCamera(){
-      try {
-        if (codeReader) { codeReader.reset(); codeReader = null; }
-        if (currentStream) {
-          currentStream.getTracks().forEach(t=>t.stop());
-          currentStream = null;
+            if(!idText){
+              // Fallback: jsQR for QR only
+              const imgData = ctx.getImageData(0,0, scanCanvas.width, scanCanvas.height);
+              const qr = jsQR(imgData.data, imgData.width, imgData.height);
+              if(qr && qr.data) idText = qr.data.trim();
+            }
+            if(idText && /\d{6}-E$/.test(idText)){
+              emaId.value = idText; toast('ID captured from card');
+              closeModal('#scanModal'); await stopScan(); return;
+            } else if(idText) {
+              scanStatus.textContent = 'Code read but not a valid EMA ID. Try again.';
+            } else {
+              scanStatus.textContent = 'Scanning… (try aligning the card)';
+            }
+          } catch (e) { console.warn(e); }
         }
-      } catch {}
+        await new Promise(r=> setTimeout(r, 200));
+      }
     }
-    closeScanX.addEventListener("click", ()=> { stopCamera(); modalScan.classList.remove("open"); });
+
+    $('#scanClose').addEventListener('click', async ()=>{ closeModal('#scanModal'); await stopScan(); });
+    btnScan.addEventListener('click', startScan);
 
     // Forgot ID
-    btnForgot.addEventListener("click", ()=> {
-      modalForgot.classList.add("open");
-      forgotMsg.textContent = "";
-    });
-    closeForgotX.addEventListener("click", ()=> modalForgot.classList.remove("open"));
-    btnFindId.addEventListener("click", async ()=>{
-      const p = fpProvince.value;
-      const d = fpDistrict.value;
-      const ph = fpPhone.value.trim();
-      if (!rxPhone.test(ph) || !p || !d){
-        forgotMsg.textContent = "Please fill all fields with valid values.";
-        return;
-      }
-      forgotMsg.textContent = "Searching…";
+    const forgotModal = $('#forgotModal');
+    $('#forgotClose').addEventListener('click', ()=> closeModal('#forgotModal'));
+
+    btnForgot.addEventListener('click', ()=> openModal('#forgotModal'));
+
+    $('#btnFindId').addEventListener('click', async ()=>{
+      const phone = $('#forgotPhone').value.trim();
+      const prov = $('#forgotProvince').value;
+      const dist = $('#forgotDistrict').value;
+      if(!phoneOk(phone)) return toast('Enter a valid phone number');
+      if(!prov || !dist) return toast('Select province & district');
       try {
-        const res = await fetch(`${DB_ROOT}/users.json`);
-        const data = await res.json() || {};
-        const found = Object.values(data).find(u => u.phone === ph && u.province === p && u.district === d);
-        if (found) {
-          forgotMsg.innerHTML = `<span class="good">Found your ID:</span> <strong>${found.id}</strong>`;
-        } else {
-          forgotMsg.innerHTML = `<span class="error">ID number not found. Try aligning the card and rescanning.</span>`;
-        }
-      } catch (e) {
-        forgotMsg.textContent = "Could not query database. Try again.";
-      }
+        const snap = await get(child(ref(db), 'users'));
+        if(!snap.exists()) return $('#forgotResult').textContent='No users found.';
+        const users = snap.val();
+        const found = Object.values(users).find(u=> u.phone===phone && u.province===prov && u.district===dist);
+        if(found && found.id){ $('#forgotResult').textContent = `Your EMA ID is: ${found.id}`; } else { $('#forgotResult').textContent='ID not found. Please check the details.'; }
+      } catch (e) { console.error(e); toast('Lookup failed. Try again later.'); }
     });
 
     // Login
-    btnLogin.addEventListener("click", ()=>{
-      const id = emaId.value.trim().toUpperCase();
-      if (!/^\d{6}-E$/.test(id)) {
-        alert("Please enter a valid EMA ID like 123456-E");
-        return;
-      }
-      if (saveLogin.checked) {
-        try {
-          localStorage.setItem("ema_id", id);
-          document.cookie = `ema_id=${encodeURIComponent(id)}; path=/; max-age=${60*60*24*365}`;
-        } catch {}
-      }
-      // Redirect to home.html with ID number signaled
-      location.href = `home.html?id=${encodeURIComponent(id)}`;
+    btnLogin.addEventListener('click', ()=>{
+      const id = emaId.value.trim();
+      if(!/^[0-9]{6}-E$/.test(id)) return toast('Enter a valid EMA ID (e.g., 123456-E)');
+      if(saveLogin.checked){ persistId(id); }
+      window.location.href = `home.html?id=${encodeURIComponent(id)}`;
     });
 
-    // Auto-fill saved ID if present
-    (function prefillId(){
-      try {
-        const saved = localStorage.getItem("ema_id") || (document.cookie.match(/(?:^|;\s*)ema_id=([^;]+)/) || [])[1];
-        if (saved) { emaId.value = decodeURIComponent(saved); saveLogin.checked = true; }
-      } catch {}
-    })();
-
-    // Basic UX: Enter to login
-    emaId.addEventListener("keydown", (e)=>{ if (e.key === "Enter") btnLogin.click(); });
-  </script>
-
-  <!-- Accessibility hint for keyboard users -->
-  <script>
-    // When Register button clicked from keyboard, focus first field
-    document.getElementById("btnRegister").addEventListener("click", ()=>{
-      setTimeout(()=> document.getElementById("fullName").focus(), 50);
-    });
+    // Restore saved ID
+    try { const saved = localStorage.getItem('emaId'); if(saved) { emaId.value = saved; saveLogin.checked = true; } } catch(_){}
   </script>
 </body>
 </html>
