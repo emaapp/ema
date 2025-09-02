@@ -5,165 +5,524 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>EMA – Elephant Monitoring App</title>
   <link rel="icon" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" />
-  <meta name="theme-color" content="#ffffff" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="theme-color" content="#0f766e" />
   <style>
     :root{
-      --bg:#f9fafb;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --primary:#0ea5a5;
+      --bg:#0b1214; /* deep charcoal */
+      --card:#0f1a1d; /* slate card */
+      --muted:#9fb0b6;
+      --primary:#0ea5a5; /* teal */
       --primary-strong:#0f766e;
       --ring:#22d3ee;
       --danger:#ef4444;
       --ok:#22c55e;
     }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;background:var(--bg);color:#111}
-    .container{max-width:420px;margin:0 auto;padding:20px}
-    #splash{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:50;opacity:1;transition:opacity .6s ease}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji";background:linear-gradient(180deg,#071215,#0b1c20 50%, #0a1214);color:#e7f2f5}
+    a{color:var(--ring)}
+    .container{max-width:980px;margin:0 auto;padding:24px}
+
+
+    #splash{position:fixed;inset:0;background:radial-gradient(1200px 600px at 10% 10%,rgba(34,211,238,.15),transparent),#031013;display:flex;align-items:center;justify-content:center;z-index:50;opacity:1;transition:opacity .6s ease}
     #splash.hidden{opacity:0;pointer-events:none}
-    .splash-card{text-align:center}
-    .splash-card img{width:80px;height:80px}
-    .splash-title{font-weight:700;font-size:20px;margin-top:10px}
-    .card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
-    h1{font-size:22px;margin-bottom:6px}
-    .sub{color:var(--muted);font-size:14px;margin-bottom:16px}
-    label{font-size:14px;color:#111}
-    .input{display:flex;align-items:center;border:1px solid #ddd;border-radius:10px;padding:10px;margin-top:6px}
-    .input input, .input select{all:unset;flex:1;font-size:15px}
-    .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--primary);color:#fff;font-weight:600;padding:10px 14px;border-radius:10px;cursor:pointer;width:100%;text-align:center}
-    .btn.secondary{background:#f3f4f6;color:#111;border:1px solid #ddd}
-    .btn.ghost{background:transparent;border:1px dashed #bbb;color:#111}
-    .row{display:flex;flex-wrap:wrap;gap:10px}
-    .row>*{flex:1 1 160px}
-    .sep{text-align:center;color:var(--muted);margin:10px 0}
-    .tick{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:10px}
+    .splash-card{background:#02181a;border:1px solid rgba(255,255,255,.06);padding:32px 28px;border-radius:24px;box-shadow:0 10px 60px rgba(0,0,0,.35)}
+    .splash-logo{display:flex;gap:16px;align-items:center}
+    .splash-logo img{width:56px;height:56px;border-radius:14px}
+    .splash-title{font-weight:800;font-size:24px;letter-spacing:.3px}
+    .splash-sub{font-size:13px;color:var(--muted)}
+
+
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));backdrop-filter:saturate(140%) blur(6px);border:1px solid rgba(255,255,255,.06);border-radius:20px;box-shadow:0 10px 50px rgba(0,0,0,.3)}
+    .login-card{padding:28px}
+    .grid{display:grid;grid-template-columns:1fr;gap:18px}
+
+    h1{margin:6px 0 2px;font-size:28px;line-height:1.2}
+    .sub{color:var(--muted);font-size:14px}
+
+
+    label{font-size:14px;color:#d6e7ea}
+    .input{display:flex;align-items:center;background:#0c1619;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;gap:10px}
+    .input input{all:unset;color:#e7f2f5;font-size:15px;flex:1}
+    .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--primary);color:#041113;font-weight:700;padding:12px 16px;border-radius:14px;cursor:pointer;transition:transform .06s ease,filter .2s,opacity .2s}
+    .btn:hover{filter:brightness(1.05)}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:#132328;color:#d8ebee;border:1px solid rgba(255,255,255,.08)}
+    .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,.2);color:#c7e8eb}
+    .btn.full{width:100%}
+    .muted{color:var(--muted)}
+    .sep{display:flex;align-items:center;gap:8px;color:#87a2a7;justify-content:center}
+
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .row > *{flex:1 1 240px}
+
+    .hint{font-size:12px;color:#8fb0b5}
+    .faded{opacity:.65}
+
+    .tick{display:flex;align-items:center;gap:10px;font-size:14px}
+    .tick input{width:18px;height:18px}
+
+
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60}
     .modal.open{display:flex}
-    .modal .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4)}
-    .modal .panel{position:relative;width:95%;max-width:480px;max-height:90vh;overflow:auto;background:var(--card);border-radius:14px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.2)}
-    .close-x{position:absolute;top:10px;right:10px;background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer}
-    .avatar-uploader{text-align:center;border:1.5px dashed #ccc;border-radius:10px;padding:16px;margin-bottom:10px}
-    .avatar{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid #ddd;display:block;margin:0 auto 8px}
-    .idcard{background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;text-align:left;box-shadow:0 6px 20px rgba(0,0,0,.15)}
-    .idcard-footer{height:6px;background:var(--ok);border-radius:0 0 12px 12px;margin-top:8px}
-    .id-round{width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid #ccc}
-    .id-lines{margin-left:10px}
-    .nm{font-weight:700;font-size:16px}
-    .barcode{text-align:center;margin-top:10px}
-    .spinner{width:24px;height:24px;border:3px solid #ccc;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin-right:8px}
+    .modal .overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px)}
+    .modal .panel{position:relative;max-width:920px;width:min(920px,92vw);max-height:86vh;overflow:auto;background:#081416;border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:20px}
+    .modal .close-x{position:absolute;top:12px;right:12px;background:transparent;border:none;color:#b9d7db;font-size:22px;cursor:pointer}
+
+
+    .register-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .avatar-uploader{display:grid;place-items:center;border:1.5px dashed rgba(255,255,255,.18);border-radius:18px;padding:18px;background:#0a181b}
+    .avatar-uploader input{display:none}
+    .avatar{width:110px;height:110px;border-radius:999px;object-fit:cover;border:3px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .plus{font-size:36px;line-height:1}
+
+    #scanBox{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+    .scan-frame{width:min(80vw,520px);height:220px;border:3px solid rgba(34,211,238,.9);border-radius:16px;box-shadow:0 0 40px rgba(34,211,238,.25) inset}
+    video{width:100%;border-radius:16px}
+
+
+    .center{display:flex;align-items:center;justify-content:center}
+    .spinner{width:28px;height:28px;border-radius:999px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--ring);animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
+
+    .idcard{background:linear-gradient(135deg,#0b2a2e,#0b1e22 60%);color:#dff4f6;border-radius:18px;border:1px solid rgba(255,255,255,.08);padding:16px;display:grid;grid-template-columns:90px 1fr 130px;gap:12px;align-items:center;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+    .id-round{width:84px;height:84px;border-radius:999px;object-fit:cover;border:3px solid rgba(255,255,255,.2)}
+    .id-lines{line-height:1.2}
+    .id-lines .nm{font-weight:800;font-size:18px}
+    .barcode{grid-column:1 / -1;margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:8px}
+    canvas{max-width:100%}
+
+    /* Footer */
+    .pwa-badge{margin-top:8px;font-size:12px;color:#89a9ae}
   </style>
 </head>
 <body>
+  <!-- Splash Ad (2s) -->
   <div id="splash">
     <div class="splash-card">
-      <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" alt="logo">
-      <div class="splash-title">EMA • Elephant Monitoring App</div>
+      <div class="splash-logo">
+        <img alt="EMA" src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" />
+        <div>
+          <div class="splash-title">EMA • Elephant Monitoring App</div>
+          <div class="splash-sub">Protecting giants with data. Loading…</div>
+        </div>
+      </div>
     </div>
   </div>
+
   <div class="container">
-    <div class="card">
+    <div class="card login-card">
       <h1>Welcome to EMA</h1>
       <div class="sub">Sign in with your EMA ID or scan your E‑Card.</div>
-      <label>EMA ID</label>
-      <div class="input"><input id="emaId" placeholder="XXXXXX-E"><button id="loginBtn" class="btn"><i class="fa-solid fa-right-to-bracket"></i> Login</button></div>
-      <div class="sep">or</div>
-      <div class="row">
-        <button id="scanBtn" class="btn secondary"><i class="fa-solid fa-qrcode"></i> Scan E‑Card</button>
-        <button id="registerBtn" class="btn ghost"><i class="fa-solid fa-user-plus"></i> Register</button>
-        <button id="forgotBtn" class="btn ghost"><i class="fa-solid fa-key"></i> Forgot ID</button>
+
+      <div class="grid" style="margin-top:16px">
+        <!-- Section 1: ID + Login -->
+        <div>
+          <label for="emaId">EMA ID</label>
+          <div class="input" style="margin-top:8px">
+            <input id="emaId" placeholder="XXXXXX-E" maxlength="8" inputmode="numeric" autocomplete="one-time-code" />
+            <button id="loginBtn" class="btn">Login</button>
+          </div>
+        </div>
+
+        <div class="sep">——— or ———</div>
+
+        <!-- Section 2: Scan + Register/Forgot -->
+        <div class="row">
+          <button id="scanBtn" class="btn secondary full">Scan the E‑Card</button>
+          <div class="muted faded" style="display:flex;align-items:center;justify-content:center">still not registered?</div>
+          <button id="registerBtn" class="btn ghost">Register</button>
+          <button id="forgotBtn" class="btn ghost">Forgot ID</button>
+        </div>
+
+        <label class="tick"><input id="rememberTick" type="checkbox"> Save login data for fast loading</label>
+        <div id="loginMsg" class="hint"></div>
       </div>
-      <label class="tick"><input id="rememberTick" type="checkbox"> Save login data</label>
-      <div id="loginMsg" class="sub"></div>
+      <div class="pwa-badge">PWA enabled • Install from your browser menu</div>
     </div>
   </div>
-  <div id="registerSheet" class="modal">
+
+
+  <div id="registerSheet" class="modal" aria-hidden="true">
     <div class="overlay"></div>
     <div class="panel">
-      <button class="close-x" data-close="registerSheet"><i class="fa-solid fa-xmark"></i></button>
-      <h2>Register</h2>
-      <div class="avatar-uploader">
-        <label for="avatarInput"><img id="avatarPreview" class="avatar" style="display:none"><div><i class="fa-solid fa-circle-plus"></i> Upload Profile Picture</div></label>
-        <input id="avatarInput" type="file" accept="image/*">
+      <button class="close-x" data-close="registerSheet">✕</button>
+      <h2>Create your EMA Account</h2>
+      <div class="muted" style="margin-bottom:12px">Please enter valid and true information. Your account is checked before registering.</div>
+
+      <div class="register-grid">
+        <div class="avatar-uploader">
+          <label for="avatarInput" style="display:grid;place-items:center;gap:6px;cursor:pointer">
+            <img id="avatarPreview" class="avatar" src="" alt="Profile preview" style="display:none" />
+            <div class="plus">＋</div>
+            <div>Upload Profile Picture</div>
+          </label>
+          <input id="avatarInput" type="file" accept="image/*" />
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Full Name</label>
+            <div class="input" style="margin-top:6px"><input id="regName" placeholder="e.g., Dinuka Perera" /></div>
+            <div class="hint">At least 5 characters</div>
+          </div>
+          <div>
+            <label>Phone Number</label>
+            <div class="input" style="margin-top:6px"><input id="regPhone" placeholder="+94XX XXX XXXX or 07X XXX XXXX" inputmode="tel" /></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Email</label>
+            <div class="input" style="margin-top:6px"><input id="regEmail" placeholder="name@example.com" inputmode="email" /></div>
+          </div>
+          <div>
+            <label>Province</label>
+            <div class="input" style="margin-top:6px">
+              <select id="regProvince" style="all:unset;flex:1"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>District</label>
+            <div class="input" style="margin-top:6px">
+              <select id="regDistrict" style="all:unset;flex:1"></select>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+          <button id="submitRegister" class="btn">Register</button>
+          <button class="btn secondary" data-close="registerSheet">Cancel</button>
+        </div>
       </div>
-      <label>Full Name</label>
-      <div class="input"><input id="regName"></div>
-      <label>Phone Number</label>
-      <div class="input"><input id="regPhone"></div>
-      <label>Email</label>
-      <div class="input"><input id="regEmail"></div>
-      <label>Province</label>
-      <div class="input"><select id="regProvince"></select></div>
-      <label>District</label>
-      <div class="input"><select id="regDistrict"></select></div>
-      <button id="submitRegister" class="btn"><i class="fa-solid fa-user-check"></i> Register</button>
     </div>
   </div>
+
+
   <div id="regResult" class="modal">
     <div class="overlay"></div>
     <div class="panel">
-      <button class="close-x" data-close="regResult"><i class="fa-solid fa-xmark"></i></button>
-      <div id="regLoading" style="display:flex;align-items:center"><div class="spinner"></div> Registering…</div>
+      <button class="close-x" data-close="regResult">✕</button>
+      <div id="regLoading" class="center" style="gap:12px">
+        <div class="spinner"></div>
+        <div>Registering…</div>
+      </div>
       <div id="regDone" style="display:none">
         <h3 id="idText"></h3>
-        <div id="idCard" class="idcard">
-          <div style="display:flex;align-items:center">
-            <img id="cardAvatar" class="id-round">
+        <div id="cardWrap" style="margin:14px 0">
+          <div id="idCard" class="idcard">
+            <img id="cardAvatar" class="id-round" alt="Profile" />
             <div class="id-lines">
-              <div id="cardName" class="nm"></div>
-              <div id="cardEmail" class="sub"></div>
-              <div id="cardPhone" class="sub"></div>
-              <div id="cardGeo" class="sub"></div>
-              <div id="cardId" class="sub"></div>
+              <div class="nm" id="cardName"></div>
+              <div id="cardEmail" class="muted"></div>
+              <div id="cardPhone" class="muted"></div>
+              <div id="cardGeo" class="muted"></div>
+              <div id="cardId" class="muted"></div>
+            </div>
+            <div id="cardQR"></div>
+            <div class="barcode">
+              <canvas id="cardDMX" title="Data Matrix"></canvas>
             </div>
           </div>
-          <div id="cardQR"></div>
-          <div class="barcode"><canvas id="cardDMX"></canvas></div>
-          <div class="idcard-footer"></div>
         </div>
-        <button id="downloadCard" class="btn secondary"><i class="fa-solid fa-download"></i> Download ID Card</button>
-        <button id="doneBtn" class="btn"><i class="fa-solid fa-check"></i> Done</button>
+        <div class="row">
+          <button id="downloadCard" class="btn secondary">Download ID Card (PNG)</button>
+          <button id="doneBtn" class="btn">Done</button>
+        </div>
       </div>
     </div>
   </div>
+
+
+  <div id="scanModal" class="modal">
+    <div class="overlay"></div>
+    <div class="panel">
+      <button class="close-x" data-close="scanModal">✕</button>
+      <h3>Scan your EMA E‑Card</h3>
+      <div class="muted" style="margin-bottom:8px">Align the card inside the frame. First scans QR, then Data Matrix.</div>
+      <div style="position:relative">
+        <video id="video" autoplay playsinline></video>
+        <div id="scanBox"><div class="scan-frame"></div></div>
+      </div>
+      <div id="scanMsg" class="hint" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+
+  <div id="forgotModal" class="modal">
+    <div class="overlay"></div>
+    <div class="panel">
+      <button class="close-x" data-close="forgotModal">✕</button>
+      <h3>Recover your EMA ID</h3>
+      <div class="row">
+        <div>
+          <label>Phone Number</label>
+          <div class="input" style="margin-top:6px"><input id="findPhone" placeholder="+94XX XXX XXXX or 07X XXX XXXX" inputmode="tel" /></div>
+        </div>
+        <div>
+          <label>Province</label>
+          <div class="input" style="margin-top:6px"><select id="findProvince" style="all:unset;flex:1"></select></div>
+        </div>
+        <div>
+          <label>District</label>
+          <div class="input" style="margin-top:6px"><select id="findDistrict" style="all:unset;flex:1"></select></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:10px">
+        <button id="findBtn" class="btn">Find ID</button>
+        <div id="findMsg" class="hint"></div>
+      </div>
+    </div>
+  </div>
+
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
-    const firebaseConfig={apiKey:"AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",authDomain:"project-ema-998cd.firebaseapp.com",projectId:"project-ema-998cd",storageBucket:"project-ema-998cd.firebasestorage.app",messagingSenderId:"356739398551",appId:"1:356739398551:web:df3f900d8d7a07c38e22d2",measurementId:"G-RHDKXHXFLE",databaseURL:"https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app/"};
-    const app=initializeApp(firebaseConfig);const db=getDatabase(app);
-    setTimeout(()=>document.getElementById('splash').classList.add('hidden'),2000);
-    const GEO={"Western":["Colombo","Gampaha","Kalutara"],"Central":["Kandy","Matale","Nuwara Eliya"],"Southern":["Galle","Matara","Hambantota"],"Northern":["Jaffna","Kilinochchi","Mannar","Vavuniya","Mullaitivu"],"Eastern":["Trincomalee","Batticaloa","Ampara"],"North Western":["Kurunegala","Puttalam"],"North Central":["Anuradhapura","Polonnaruwa"],"Uva":["Badulla","Monaragala"],"Sabaragamuwa":["Ratnapura","Kegalle"]};
-    function fillProvinces(pSel,dSel){pSel.innerHTML='<option>Select province</option>'+Object.keys(GEO).map(p=>`<option>${p}</option>`).join('');dSel.innerHTML='<option>Select district</option>';pSel.addEventListener('change',()=>{const ds=GEO[pSel.value]||[];dSel.innerHTML='<option>Select district</option>'+ds.map(d=>`<option>${d}</option>`).join('');});}
-    fillProvinces(document.getElementById('regProvince'),document.getElementById('regDistrict'));
-    document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{document.getElementById(b.getAttribute('data-close')).classList.remove('open')}));
-    function openModal(id){document.getElementById(id).classList.add('open')}
-    document.getElementById('registerBtn').onclick=()=>openModal('registerSheet');
-    document.getElementById('submitRegister').onclick=async()=>{
-      const name=document.getElementById('regName').value.trim();
-      const phone=document.getElementById('regPhone').value.trim();
-      const email=document.getElementById('regEmail').value.trim();
-      const province=document.getElementById('regProvince').value;
-      const district=document.getElementById('regDistrict').value;
-      if(name.length<5||!phone||!email||!province||!district)return;
-      openModal('regResult');
-      document.getElementById('regLoading').style.display='flex';
-      document.getElementById('regDone').style.display='none';
-      const id=Math.floor(100000+Math.random()*900000)+'-E';
-      const payload={name,phone,email,province,district,id};
-      await set(ref(db,'users/'+id),payload);
-      document.getElementById('regLoading').style.display='none';
-      document.getElementById('regDone').style.display='block';
-      document.getElementById('idText').textContent=id+' is your EMA ID';
-      document.getElementById('cardName').textContent=name;
-      document.getElementById('cardEmail').textContent=email;
-      document.getElementById('cardPhone').textContent=phone;
-      document.getElementById('cardGeo').textContent=province+' • '+district;
-      document.getElementById('cardId').textContent='EMA ID: '+id;
-      new QRCode(document.getElementById('cardQR'),{text:id,width:100,height:100});
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
+      authDomain: "project-ema-998cd.firebaseapp.com",
+      projectId: "project-ema-998cd",
+      storageBucket: "project-ema-998cd.firebasestorage.app",
+      messagingSenderId: "356739398551",
+      appId: "1:356739398551:web:df3f900d8d7a07c38e22d2",
+      measurementId: "G-RHDKXHXFLE",
+      databaseURL: "https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app/"
     };
+
+    const app = initializeApp(firebaseConfig);
+    try{ getAnalytics(app); }catch(e){}
+    const db = getDatabase(app);
+
+ 
+    const GEO = {
+      "Western": ["Colombo","Gampaha","Kalutara"],
+      "Central": ["Kandy","Matale","Nuwara Eliya"],
+      "Southern": ["Galle","Matara","Hambantota"],
+      "Northern": ["Jaffna","Kilinochchi","Mannar","Vavuniya","Mullaitivu"],
+      "Eastern": ["Trincomalee","Batticaloa","Ampara"],
+      "North Western": ["Kurunegala","Puttalam"],
+      "North Central": ["Anuradhapura","Polonnaruwa"],
+      "Uva": ["Badulla","Monaragala"],
+      "Sabaragamuwa": ["Ratnapura","Kegalle"]
+    };
+
+
+    const $ = (q)=>document.querySelector(q);
+    const $$ = (q)=>Array.from(document.querySelectorAll(q));
+
+
+    setTimeout(()=>{$('#splash').classList.add('hidden')}, 2000);
+
+
+   function fillProvinces(pSel, dSel){
+      pSel.innerHTML = '<option value="" disabled selected>Select province</option>' + Object.keys(GEO).map(p=>`<option>${p}</option>`).join('');
+      dSel.innerHTML = '<option value="" disabled selected>Select district</option>';
+      pSel.addEventListener('change',()=>{
+        const ds = GEO[pSel.value]||[];
+        dSel.innerHTML = '<option value="" disabled selected>Select district</option>' + ds.map(d=>`<option>${d}</option>`).join('');
+      });
+    }
+    fillProvinces($('#regProvince'), $('#regDistrict'));
+    fillProvinces($('#findProvince'), $('#findDistrict'));
+
+
+    $('#avatarInput').addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const img = $('#avatarPreview');
+      img.src = URL.createObjectURL(file);
+      img.style.display = 'block';
+    });
+
+
+    const nameOk = (v)=> v && v.trim().length >= 5;
+    const phoneOk = (v)=> /^(?:\+94\d{2}\s?\d{3}\s?\d{4}|07\d\s?\d{3}\s?\d{4})$/.test(v.trim());
+    const emailOk = (v)=> /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+
+
+    function openModal(id){ const m = document.getElementById(id); m.classList.add('open'); m.setAttribute('aria-hidden','false'); }
+    function closeModal(id){ const m = document.getElementById(id); m.classList.remove('open'); m.setAttribute('aria-hidden','true'); }
+    $$('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.getAttribute('data-close'))));
+
+
+    $('#registerBtn').addEventListener('click',()=>openModal('registerSheet'));
+    $('#forgotBtn').addEventListener('click',()=>openModal('forgotModal'));
+
+
+    (function(){
+      const saved = localStorage.getItem('emaID') || (document.cookie.match(/(?:^|;)\s*emaID=([^;]+)/)||[])[1];
+      if(saved){ $('#emaId').value = decodeURIComponent(saved); $('#rememberTick').checked = true; }
+    })();
+
+
+    $('#loginBtn').addEventListener('click',()=>{
+      const id = ($('#emaId').value||'').toUpperCase().trim();
+      if(!/^\d{6}-E$/.test(id)){ $('#loginMsg').textContent='Enter a valid EMA ID like 123456-E'; return; }
+      if($('#rememberTick').checked){ localStorage.setItem('emaID', id); document.cookie = 'emaID='+encodeURIComponent(id)+'; max-age='+(60*60*24*365)+'; path=/'; }
+      window.location.href = 'home.html?id='+encodeURIComponent(id);
+    });
+
+    function toDataURL(file){
+      return new Promise((resolve)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.readAsDataURL(file); });
+    }
+
+    $('#submitRegister').addEventListener('click', async ()=>{
+      const name = $('#regName').value.trim();
+      const phone = $('#regPhone').value.trim();
+      const email = $('#regEmail').value.trim();
+      const province = $('#regProvince').value;
+      const district = $('#regDistrict').value;
+
+      if(!nameOk(name)) return alert('Full Name must be at least 5 characters.');
+      if(!phoneOk(phone)) return alert('Enter a valid Sri Lankan phone number.');
+      if(!emailOk(email)) return alert('Enter a valid email.');
+      if(!province || !district) return alert('Select province and district.');
+
+      openModal('regResult');
+      $('#regLoading').style.display='flex';
+      $('#regDone').style.display='none';
+
+      // Generate numeric 6-digit ID + -E
+      const gen = ()=> String(Math.floor(100000 + Math.random()*900000));
+      let num = gen();
+      // (Optional uniqueness check could be added here)
+      const id = num + '-E';
+
+      let avatarB64 = '';
+      const af = $('#avatarInput').files[0];
+      if(af){ avatarB64 = await toDataURL(af); }
+
+      const payload = { name, phone, email, province, district, id, createdAt: new Date().toISOString(), avatarB64 };
+
+      try{
+        await set(ref(db, 'users/'+id), payload);
+      }catch(err){
+        console.error(err);
+        alert('Failed to register: '+err.message);
+        closeModal('regResult');
+        return;
+      }
+
+      $('#regLoading').style.display='none';
+      $('#regDone').style.display='block';
+      $('#idText').textContent = `${id} is your ID for logging into EMA`;
+      $('#cardAvatar').src = avatarB64 || 'https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png';
+      $('#cardName').textContent = name;
+      $('#cardEmail').textContent = email;
+      $('#cardPhone').textContent = phone;
+      $('#cardGeo').textContent = province + ' • ' + district;
+      $('#cardId').textContent = 'EMA ID: ' + id;
+
+      // QR code
+      if(window.QRCode){
+        $('#cardQR').innerHTML='';
+        new QRCode(document.getElementById('cardQR'), { text:id, width:120, height:120, correctLevel:QRCode.CorrectLevel.M });
+      }
+      
+      if(window.BWIPJS && document.getElementById('cardDMX')){
+        try{
+          const cvs = document.getElementById('cardDMX');
+          const bw = new BWIPJS();
+          bw.bitmap(new BWIPJS.Bitmap(cvs, { rotate:false }));
+          bw.push(id);
+          bw.push({ scale:2, height:10, includetext:false });
+          bw.call('datamatrix');
+        }catch(e){ console.warn('DMX fail', e); }
+      }
+    });
+
+    $('#downloadCard').addEventListener('click', async ()=>{
+      if(!window.html2canvas) return alert('Download requires html2canvas.');
+      const node = document.getElementById('idCard');
+      const canvas = await html2canvas(node, { backgroundColor:null, scale:2 });
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url; a.download = 'EMA_ID_Card.png'; a.click();
+    });
+
+    $('#doneBtn').addEventListener('click',()=>{
+      closeModal('regResult');
+      closeModal('registerSheet');
+      // Prefill the new ID
+      const t = document.getElementById('idText').textContent||'';
+      const m = t.match(/(\d{6}-E)/); if(m){ $('#emaId').value=m[1]; }
+    });
+
+    /* Forgot ID */
+    $('#findBtn').addEventListener('click', async ()=>{
+      const phone = $('#findPhone').value.trim();
+      const province = $('#findProvince').value; const district = $('#findDistrict').value;
+      if(!phoneOk(phone)) return $('#findMsg').textContent='Enter a valid phone number.';
+      $('#findMsg').textContent='Searching…';
+      try{
+        const snap = await get(child(ref(db), 'users'));
+        if(!snap.exists()){ $('#findMsg').textContent='No users found.'; return; }
+        const users = snap.val();
+        const found = Object.values(users).find(u=> (u.phone||'').trim()===phone && u.province===province && u.district===district );
+        if(found){ $('#findMsg').textContent = 'Your EMA ID is '+found.id; $('#emaId').value = found.id; closeModal('forgotModal'); }
+        else{ $('#findMsg').textContent = 'ID not found. Check details and try again.'; }
+      }catch(e){ $('#findMsg').textContent='Error: '+e.message; }
+    });
+
+    /* Scanner (QR then fallback) via ZXing */
+    let codeReader; let stream;
+    $('#scanBtn').addEventListener('click', async ()=>{
+      openModal('scanModal');
+      $('#scanMsg').textContent = 'Starting camera…';
+      try{
+        const constraints = { video: { facingMode: { ideal:'environment' } } };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+        await new Promise(r=>video.onloadedmetadata=r);
+        $('#scanMsg').textContent = 'Scanning…';
+        startZXing();
+      }catch(e){ $('#scanMsg').textContent = 'Camera error: '+e.message; }
+    });
+
+    async function startZXing(){
+      try{
+        const { BrowserMultiFormatReader, NotFoundException } = await import('https://unpkg.com/@zxing/library@0.20.0/esm/index.min.js');
+        codeReader = new BrowserMultiFormatReader();
+        const video = document.getElementById('video');
+        const result = await new Promise((resolve)=>{
+          const hints = undefined; // let library auto-detect (QR, Data Matrix, etc.)
+          const controls = codeReader.decodeFromVideoDevice(null, video, (res, err)=>{
+            if(res){ controls.stop(); resolve(res.getText()); }
+          });
+        });
+        handleScanResult(result);
+      }catch(e){ $('#scanMsg').textContent='Scanning error: '+e.message; }
+    }
+
+    function handleScanResult(text){
+      if(/\d{6}-E/.test(text)){
+        $('#emaId').value = text.match(/\d{6}-E/)[0];
+        stopScan();
+        closeModal('scanModal');
+      }else{
+        $('#scanMsg').textContent = 'ID number not found. Try aligning the card and rescanning.';
+      }
+    }
+
+    function stopScan(){
+      try{ codeReader && codeReader.reset && codeReader.reset(); }catch(e){}
+      if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+    }
+
+    document.querySelector('[data-close="scanModal"]').addEventListener('click', stopScan);
+
   </script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/bwip-js@3.3.4/dist/bwip-js-min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </body>
 </html>
