@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EMA – Elephant Monitoring App</title>
+  <link rel="icon" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{
+      --bg:#f9fafb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --primary:#0ea5a5;
+      --primary-strong:#0f766e;
+      --ring:#22d3ee;
+      --danger:#ef4444;
+      --ok:#22c55e;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;background:var(--bg);color:#111}
+    .container{max-width:420px;margin:0 auto;padding:20px}
+    #splash{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:50;opacity:1;transition:opacity .6s ease}
+    #splash.hidden{opacity:0;pointer-events:none}
+    .splash-card{text-align:center}
+    .splash-card img{width:80px;height:80px}
+    .splash-title{font-weight:700;font-size:20px;margin-top:10px}
+    .card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    h1{font-size:22px;margin-bottom:6px}
+    .sub{color:var(--muted);font-size:14px;margin-bottom:16px}
+    label{font-size:14px;color:#111}
+    .input{display:flex;align-items:center;border:1px solid #ddd;border-radius:10px;padding:10px;margin-top:6px}
+    .input input, .input select{all:unset;flex:1;font-size:15px}
+    .btn{all:unset;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--primary);color:#fff;font-weight:600;padding:10px 14px;border-radius:10px;cursor:pointer;width:100%;text-align:center}
+    .btn.secondary{background:#f3f4f6;color:#111;border:1px solid #ddd}
+    .btn.ghost{background:transparent;border:1px dashed #bbb;color:#111}
+    .row{display:flex;flex-wrap:wrap;gap:10px}
+    .row>*{flex:1 1 160px}
+    .sep{text-align:center;color:var(--muted);margin:10px 0}
+    .tick{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:10px}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60}
+    .modal.open{display:flex}
+    .modal .overlay{position:absolute;inset:0;background:rgba(0,0,0,.4)}
+    .modal .panel{position:relative;width:95%;max-width:480px;max-height:90vh;overflow:auto;background:var(--card);border-radius:14px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+    .close-x{position:absolute;top:10px;right:10px;background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+    .avatar-uploader{text-align:center;border:1.5px dashed #ccc;border-radius:10px;padding:16px;margin-bottom:10px}
+    .avatar{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid #ddd;display:block;margin:0 auto 8px}
+    .idcard{background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;text-align:left;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+    .idcard-footer{height:6px;background:var(--ok);border-radius:0 0 12px 12px;margin-top:8px}
+    .id-round{width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid #ccc}
+    .id-lines{margin-left:10px}
+    .nm{font-weight:700;font-size:16px}
+    .barcode{text-align:center;margin-top:10px}
+    .spinner{width:24px;height:24px;border:3px solid #ccc;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin-right:8px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div id="splash">
+    <div class="splash-card">
+      <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" alt="logo">
+      <div class="splash-title">EMA • Elephant Monitoring App</div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="card">
+      <h1>Welcome to EMA</h1>
+      <div class="sub">Sign in with your EMA ID or scan your E‑Card.</div>
+      <label>EMA ID</label>
+      <div class="input"><input id="emaId" placeholder="XXXXXX-E"><button id="loginBtn" class="btn"><i class="fa-solid fa-right-to-bracket"></i> Login</button></div>
+      <div class="sep">or</div>
+      <div class="row">
+        <button id="scanBtn" class="btn secondary"><i class="fa-solid fa-qrcode"></i> Scan E‑Card</button>
+        <button id="registerBtn" class="btn ghost"><i class="fa-solid fa-user-plus"></i> Register</button>
+        <button id="forgotBtn" class="btn ghost"><i class="fa-solid fa-key"></i> Forgot ID</button>
+      </div>
+      <label class="tick"><input id="rememberTick" type="checkbox"> Save login data</label>
+      <div id="loginMsg" class="sub"></div>
+    </div>
+  </div>
+  <div id="registerSheet" class="modal">
+    <div class="overlay"></div>
+    <div class="panel">
+      <button class="close-x" data-close="registerSheet"><i class="fa-solid fa-xmark"></i></button>
+      <h2>Register</h2>
+      <div class="avatar-uploader">
+        <label for="avatarInput"><img id="avatarPreview" class="avatar" style="display:none"><div><i class="fa-solid fa-circle-plus"></i> Upload Profile Picture</div></label>
+        <input id="avatarInput" type="file" accept="image/*">
+      </div>
+      <label>Full Name</label>
+      <div class="input"><input id="regName"></div>
+      <label>Phone Number</label>
+      <div class="input"><input id="regPhone"></div>
+      <label>Email</label>
+      <div class="input"><input id="regEmail"></div>
+      <label>Province</label>
+      <div class="input"><select id="regProvince"></select></div>
+      <label>District</label>
+      <div class="input"><select id="regDistrict"></select></div>
+      <button id="submitRegister" class="btn"><i class="fa-solid fa-user-check"></i> Register</button>
+    </div>
+  </div>
+  <div id="regResult" class="modal">
+    <div class="overlay"></div>
+    <div class="panel">
+      <button class="close-x" data-close="regResult"><i class="fa-solid fa-xmark"></i></button>
+      <div id="regLoading" style="display:flex;align-items:center"><div class="spinner"></div> Registering…</div>
+      <div id="regDone" style="display:none">
+        <h3 id="idText"></h3>
+        <div id="idCard" class="idcard">
+          <div style="display:flex;align-items:center">
+            <img id="cardAvatar" class="id-round">
+            <div class="id-lines">
+              <div id="cardName" class="nm"></div>
+              <div id="cardEmail" class="sub"></div>
+              <div id="cardPhone" class="sub"></div>
+              <div id="cardGeo" class="sub"></div>
+              <div id="cardId" class="sub"></div>
+            </div>
+          </div>
+          <div id="cardQR"></div>
+          <div class="barcode"><canvas id="cardDMX"></canvas></div>
+          <div class="idcard-footer"></div>
+        </div>
+        <button id="downloadCard" class="btn secondary"><i class="fa-solid fa-download"></i> Download ID Card</button>
+        <button id="doneBtn" class="btn"><i class="fa-solid fa-check"></i> Done</button>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+    const firebaseConfig={apiKey:"AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",authDomain:"project-ema-998cd.firebaseapp.com",projectId:"project-ema-998cd",storageBucket:"project-ema-998cd.firebasestorage.app",messagingSenderId:"356739398551",appId:"1:356739398551:web:df3f900d8d7a07c38e22d2",measurementId:"G-RHDKXHXFLE",databaseURL:"https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app/"};
+    const app=initializeApp(firebaseConfig);const db=getDatabase(app);
+    setTimeout(()=>document.getElementById('splash').classList.add('hidden'),2000);
+    const GEO={"Western":["Colombo","Gampaha","Kalutara"],"Central":["Kandy","Matale","Nuwara Eliya"],"Southern":["Galle","Matara","Hambantota"],"Northern":["Jaffna","Kilinochchi","Mannar","Vavuniya","Mullaitivu"],"Eastern":["Trincomalee","Batticaloa","Ampara"],"North Western":["Kurunegala","Puttalam"],"North Central":["Anuradhapura","Polonnaruwa"],"Uva":["Badulla","Monaragala"],"Sabaragamuwa":["Ratnapura","Kegalle"]};
+    function fillProvinces(pSel,dSel){pSel.innerHTML='<option>Select province</option>'+Object.keys(GEO).map(p=>`<option>${p}</option>`).join('');dSel.innerHTML='<option>Select district</option>';pSel.addEventListener('change',()=>{const ds=GEO[pSel.value]||[];dSel.innerHTML='<option>Select district</option>'+ds.map(d=>`<option>${d}</option>`).join('');});}
+    fillProvinces(document.getElementById('regProvince'),document.getElementById('regDistrict'));
+    document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{document.getElementById(b.getAttribute('data-close')).classList.remove('open')}));
+    function openModal(id){document.getElementById(id).classList.add('open')}
+    document.getElementById('registerBtn').onclick=()=>openModal('registerSheet');
+    document.getElementById('submitRegister').onclick=async()=>{
+      const name=document.getElementById('regName').value.trim();
+      const phone=document.getElementById('regPhone').value.trim();
+      const email=document.getElementById('regEmail').value.trim();
+      const province=document.getElementById('regProvince').value;
+      const district=document.getElementById('regDistrict').value;
+      if(name.length<5||!phone||!email||!province||!district)return;
+      openModal('regResult');
+      document.getElementById('regLoading').style.display='flex';
+      document.getElementById('regDone').style.display='none';
+      const id=Math.floor(100000+Math.random()*900000)+'-E';
+      const payload={name,phone,email,province,district,id};
+      await set(ref(db,'users/'+id),payload);
+      document.getElementById('regLoading').style.display='none';
+      document.getElementById('regDone').style.display='block';
+      document.getElementById('idText').textContent=id+' is your EMA ID';
+      document.getElementById('cardName').textContent=name;
+      document.getElementById('cardEmail').textContent=email;
+      document.getElementById('cardPhone').textContent=phone;
+      document.getElementById('cardGeo').textContent=province+' • '+district;
+      document.getElementById('cardId').textContent='EMA ID: '+id;
+      new QRCode(document.getElementById('cardQR'),{text:id,width:100,height:100});
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</body>
+</html>
