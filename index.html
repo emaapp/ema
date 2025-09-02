@@ -380,19 +380,13 @@
       const province = $('#regProvince').value;
       const district = $('#regDistrict').value;
 
-      if(!nameOk(name)) return alert('Full Name must be at least 5 characters.');
-      if(!phoneOk(phone)) return alert('Enter a valid Sri Lankan phone number.');
-      if(!emailOk(email)) return alert('Enter a valid email.');
-      if(!province || !district) return alert('Select province and district.');
 
       openModal('regResult');
       $('#regLoading').style.display='flex';
       $('#regDone').style.display='none';
 
-      // Generate numeric 6-digit ID + -E
       const gen = ()=> String(Math.floor(100000 + Math.random()*900000));
       let num = gen();
-      // (Optional uniqueness check could be added here)
       const id = num + '-E';
 
       let avatarB64 = '';
@@ -444,7 +438,7 @@
       const canvas = await html2canvas(node, { backgroundColor:null, scale:2 });
       const url = canvas.toDataURL('image/png');
       const a = document.createElement('a');
-      a.href = url; a.download = 'EMA_ID_Card.png'; a.click();
+      a.href = url; a.download = 'ID Card.png'; a.click();
     });
 
     $('#doneBtn').addEventListener('click',()=>{
@@ -471,7 +465,6 @@
       }catch(e){ $('#findMsg').textContent='Error: '+e.message; }
     });
 
-    /* Scanner (QR then fallback) via ZXing */
     let codeReader; let stream;
     $('#scanBtn').addEventListener('click', async ()=>{
       openModal('scanModal');
@@ -493,7 +486,7 @@
         codeReader = new BrowserMultiFormatReader();
         const video = document.getElementById('video');
         const result = await new Promise((resolve)=>{
-          const hints = undefined; // let library auto-detect (QR, Data Matrix, etc.)
+          const hints = undefined; 
           const controls = codeReader.decodeFromVideoDevice(null, video, (res, err)=>{
             if(res){ controls.stop(); resolve(res.getText()); }
           });
