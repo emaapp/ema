@@ -72,7 +72,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <div id="splash-screen" class="fixed inset-0 bg-white flex flex-col justify-center items-center z-50 fade-out">
+    <div id="splash-screen" class="fixed inset-0 bg-white flex flex-col justify-center items-center z-50">
         <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" alt="EMA Logo" class="w-32 h-32 mb-4">
         <h1 class="text-3xl font-bold text-gray-700">EMA</h1>
         <p class="text-gray-500">Elephant Monitoring App</p>
@@ -261,12 +261,8 @@
         window.hidePopup = (id) => {
             document.getElementById(id).classList.add('hidden');
             if (id === 'scanner-popup' && window.html5QrcodeScanner) {
-                // The scanner needs to be stopped before it can be cleared.
-                // The stop() method returns a promise. We'll also catch errors
-                // in case it's already stopped (e.g. by the success callback).
                 window.html5QrcodeScanner.stop()
                     .catch(err => {
-                        // Ignore the error, it's likely because the scanner was already stopped.
                         console.log("Scanner could not be stopped, likely already inactive.");
                     });
             }
@@ -404,19 +400,22 @@
         }
         
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.pointerEvents = 'none';
-                appContainer.style.opacity = '1';
-            }, 2000);
+            const savedId = localStorage.getItem('emaUserId');
+            if (savedId) {
+                // If ID is saved, redirect immediately. The splash screen will cover this.
+                window.location.href = `home.html?id=${savedId}`;
+            } else {
+                // Otherwise, fade out the splash screen and show the login page.
+                const splash = document.getElementById('splash-screen');
+                splash.classList.add('fade-out');
+                setTimeout(() => {
+                    splash.style.pointerEvents = 'none';
+                    appContainer.style.opacity = '1';
+                }, 1000); // Shorten fadeout for quicker access if not logged in
+            }
 
             populateProvinces(provinceSelect);
             populateProvinces(forgotProvinceSelect);
-
-            const savedId = localStorage.getItem('emaUserId');
-            if (savedId) {
-                document.getElementById('ema-id').value = savedId;
-                document.getElementById('save-login-checkbox').checked = true;
-            }
         });
         
         provinceSelect.addEventListener('change', (e) => populateDistricts(e.target.value, districtSelect));
@@ -483,7 +482,6 @@
             if(!phone || !province || !district) {
                 showPopup('message-popup', 'Please fill all fields to find your ID.');
                 return;
-
             }
 
             try {
@@ -522,6 +520,7 @@
                 const snapshot = await get(child(ref(db), `users/${emaId}`));
                 if(snapshot.exists()) {
                     if(document.getElementById('save-login-checkbox').checked) {
+                        // Using localStorage instead of cookies for simplicity in this context
                         localStorage.setItem('emaUserId', emaId);
                     } else {
                         localStorage.removeItem('emaUserId');
