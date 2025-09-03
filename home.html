@@ -1,430 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EMA • Home</title>
-<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-html,body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,'Noto Sans',sans-serif}
-.popup{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50}
-.popup.show{display:flex}
-.card{background:#fff;border-radius:1rem;box-shadow:0 10px 25px rgba(0,0,0,.08)}
-.touch-hint{font-size:.75rem;color:#9ca3af}
-.grid-cards{display:grid;gap:1rem}
-@media(min-width:640px){.grid-cards{grid-template-columns:1fr}}
-@media(min-width:768px){.grid-cards{grid-template-columns:1fr 1fr}}
-.badge{font-size:.75rem;padding:.25rem .5rem;border-radius:.5rem}
-.icon-btn{display:inline-flex;align-items:center;justify-content:center;border-radius:.75rem;padding:.75rem 1rem;font-weight:600}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMA - Home</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 50; }
+    .popup-content { background: white; padding: 2rem; border-radius: 1rem; width: 90%; max-width: 500px; position: relative; }
+    .close-btn { position: absolute; top: 1rem; right: 1rem; cursor: pointer; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen text-gray-800">
-<header class="w-full sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-100">
-  <div class="max-w-screen-md mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" class="w-8 h-8" alt="EMA">
-      <span class="font-bold">EMA</span>
-    </div>
-    <button id="signOutBtn" class="icon-btn bg-gray-900 text-white hover:bg-black">Sign out</button>
-  </div>
-</header>
-
-<main class="max-w-screen-md mx-auto px-4 py-5 space-y-4">
-  <section id="userCard" class="card p-4 cursor-pointer active:scale-[.99] transition">
-    <div class="flex items-center gap-4">
-      <img id="userAvatar" class="w-14 h-14 rounded-full object-cover border-2 border-blue-500 bg-gray-100" alt="Profile">
-      <div class="flex-1">
-        <p class="text-sm text-gray-500" id="greeting">Good day</p>
-        <p class="text-xl font-semibold">Hello <span id="firstName">User</span></p>
-        <div class="flex flex-wrap items-center gap-2 mt-1">
-          <span class="badge bg-blue-50 text-blue-700">EMA ID: <span id="emaIdBadge">—</span></span>
-          <span class="badge bg-gray-50 text-gray-600" id="districtBadge">—</span>
-        </div>
-      </div>
-    </div>
-    <p class="mt-3 touch-hint text-center">Touch on the card to edit</p>
-  </section>
-
-  <section class="card p-4">
-    <div class="flex items-center justify-between">
+<body class="bg-gray-50 text-gray-800 min-h-screen p-4">
+  <div class="max-w-md mx-auto space-y-6">
+    <!-- User Info Card -->
+    <div id="user-card" class="bg-white p-4 rounded-2xl shadow flex items-center cursor-pointer">
+      <img id="user-pic" src="" class="w-16 h-16 rounded-full border-2 border-blue-500 object-cover mr-4" alt="User">
       <div>
-        <p class="text-sm text-gray-500">Weather</p>
-        <p class="text-lg font-semibold" id="weatherTitle">Loading…</p>
-      </div>
-      <div class="text-right">
-        <p class="text-3xl font-bold leading-none" id="tempNow">—</p>
-        <p class="text-xs text-gray-500" id="weatherDesc">—</p>
+        <h2 id="greeting" class="text-lg font-bold">Hello</h2>
+        <p class="text-sm text-gray-500">Touch on the card to edit</p>
       </div>
     </div>
-    <div class="mt-4 flex items-center justify-between">
-      <p class="text-sm text-gray-500">Found a sighting? <a href="report.html" class="underline">Report</a></p>
-      <a href="report.html" class="icon-btn bg-blue-600 text-white hover:bg-blue-700" aria-label="Report"><span class="text-xl leading-none">+</span></a>
-    </div>
-  </section>
+    <button id="signout-btn" class="w-full bg-red-600 text-white py-2 rounded-lg shadow">Sign Out</button>
 
-  <section id="agentCard" class="card p-4">
-    <div class="flex items-center justify-between mb-3">
-      <p class="text-lg font-semibold">Agent Status</p>
-      <span id="agentStatusPill" class="badge bg-gray-100 text-gray-600">Not an Agent</span>
+    <!-- Weather Card -->
+    <div class="bg-white p-4 rounded-2xl shadow">
+      <h3 id="weather-location" class="text-lg font-bold mb-2">Weather</h3>
+      <p id="weather-temp" class="text-xl font-semibold"></p>
+      <p id="weather-condition" class="text-sm text-gray-600"></p>
+      <p id="weather-humidity" class="text-sm text-gray-600"></p>
+      <p id="weather-wind" class="text-sm text-gray-600 mb-4"></p>
+      <div class="flex justify-between items-center">
+        <p class="text-sm text-gray-500">Found a sighting? Report</p>
+        <button class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center">+</button>
+      </div>
     </div>
-    <div class="flex items-center justify-between">
-      <p id="agentIdText" class="text-sm text-gray-500">No Agent ID</p>
-      <button id="agentActionBtn" class="icon-btn bg-green-600 text-white hover:bg-green-700">Register</button>
-    </div>
-  </section>
 
-  <section class="card p-4">
-    <p class="text-lg font-semibold mb-3">Quick Actions</p>
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-      <a href="report.html" class="icon-btn bg-gray-900 text-white hover:bg-black text-center">Report</a>
-      <a href="alert.html" class="icon-btn bg-yellow-500 text-white hover:bg-yellow-600 text-center">Alert</a>
-      <a href="map.html" class="icon-btn bg-blue-600 text-white hover:bg-blue-700 text-center">Map</a>
-      <a href="service.html" class="icon-btn bg-purple-600 text-white hover:bg-purple-700 text-center">Service</a>
-      <a href="analytics.html" class="icon-btn bg-teal-600 text-white hover:bg-teal-700 text-center">Analytics</a>
+    <!-- Agent Status Card -->
+    <div id="agent-card" class="bg-white p-4 rounded-2xl shadow">
+      <h3 class="text-lg font-bold mb-2">Agent Status</h3>
+      <p id="agent-status" class="mb-4">Not an Agent</p>
+      <button id="agent-action-btn" class="bg-green-600 text-white py-2 px-4 rounded-lg">Register</button>
     </div>
-  </section>
-</main>
 
-<div id="editPopup" class="popup">
-  <div class="card w-[92%] max-w-lg p-5 relative">
-    <button class="absolute right-3 top-3 text-gray-500 hover:text-gray-800" data-close="editPopup">✕</button>
-    <p class="text-xl font-semibold mb-4">Edit Profile</p>
-    <div class="flex justify-center mb-4">
-      <label for="editAvatar" class="cursor-pointer">
-        <div id="editAvatarPreview" class="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 bg-gray-100 overflow-hidden flex items-center justify-center"></div>
-      </label>
-      <input id="editAvatar" type="file" accept="image/*" class="hidden">
-    </div>
-    <div class="grid gap-3">
-      <input id="editName" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Full Name">
-      <input id="editPhone" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Phone (+94XXXXXXXXX or 07X XXX XXXX)">
-      <input id="editEmail" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Email">
-      <select id="editProvince" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white"></select>
-      <select id="editDistrict" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white"><option value="">Select District</option></select>
-    </div>
-    <div class="mt-5 flex gap-2">
-      <button id="saveProfileBtn" class="flex-1 icon-btn bg-blue-600 text-white hover:bg-blue-700">Save</button>
-      <button class="flex-1 icon-btn bg-gray-100 text-gray-800 hover:bg-gray-200" data-close="editPopup">Cancel</button>
+    <!-- Actions Card -->
+    <div class="bg-white p-4 rounded-2xl shadow grid grid-cols-2 gap-4 text-center">
+      <a href="report.html" class="bg-blue-600 text-white py-2 rounded-lg shadow">Report</a>
+      <a href="alert.html" class="bg-red-600 text-white py-2 rounded-lg shadow">Alert</a>
+      <a href="map.html" class="bg-green-600 text-white py-2 rounded-lg shadow">Map</a>
+      <a href="service.html" class="bg-yellow-500 text-white py-2 rounded-lg shadow">Service</a>
+      <a href="analytics.html" class="col-span-2 bg-purple-600 text-white py-2 rounded-lg shadow">Analytics</a>
     </div>
   </div>
-</div>
 
-<div id="agentPopup" class="popup">
-  <div class="card w-[92%] max-w-lg p-5 relative">
-    <button class="absolute right-3 top-3 text-gray-500 hover:text-gray-800" data-close="agentPopup">✕</button>
-    <p class="text-xl font-semibold mb-4">Agent Registration</p>
-    <div class="grid gap-3">
-      <input id="agentName" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Full Name">
-      <input id="agentPhone" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Mobile Number">
-      <input id="agentNic" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="NIC Number">
-      <select id="agentDistrict" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white"></select>
-    </div>
-    <div class="mt-5 flex gap-2">
-      <button id="registerAgentBtn" class="flex-1 icon-btn bg-green-600 text-white hover:bg-green-700">Register</button>
-      <button class="flex-1 icon-btn bg-gray-100 text-gray-800 hover:bg-gray-200" data-close="agentPopup">Cancel</button>
+  <!-- Edit User Popup -->
+  <div id="edit-popup" class="popup-overlay hidden">
+    <div class="popup-content">
+      <button class="close-btn" onclick="hidePopup('edit-popup')">✖</button>
+      <h3 class="text-xl font-bold mb-4">Edit Profile</h3>
+      <input id="edit-name" type="text" placeholder="Full Name" class="w-full mb-2 px-3 py-2 border rounded-lg">
+      <input id="edit-phone" type="text" placeholder="Phone" class="w-full mb-2 px-3 py-2 border rounded-lg">
+      <input id="edit-email" type="email" placeholder="Email" class="w-full mb-2 px-3 py-2 border rounded-lg">
+      <button id="save-user-btn" class="w-full bg-blue-600 text-white py-2 rounded-lg">Save</button>
     </div>
   </div>
-</div>
 
-<div id="toast" class="fixed bottom-4 inset-x-0 flex justify-center pointer-events-none z-50 hidden">
-  <div class="px-4 py-2 rounded-lg bg-gray-900 text-white shadow-md pointer-events-auto" id="toastText"></div>
-</div>
+  <!-- Agent Popup -->
+  <div id="agent-popup" class="popup-overlay hidden">
+    <div class="popup-content">
+      <button class="close-btn" onclick="hidePopup('agent-popup')">✖</button>
+      <h3 class="text-xl font-bold mb-4">Register as Agent</h3>
+      <input id="agent-name" type="text" placeholder="Full Name" class="w-full mb-2 px-3 py-2 border rounded-lg">
+      <input id="agent-phone" type="text" placeholder="Mobile Number" class="w-full mb-2 px-3 py-2 border rounded-lg">
+      <input id="agent-nic" type="text" placeholder="NIC Number" class="w-full mb-2 px-3 py-2 border rounded-lg">
+      <button id="register-agent-btn" class="w-full bg-green-600 text-white py-2 rounded-lg">Register</button>
+    </div>
+  </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getDatabase, ref, get, set, child, update } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getDatabase, ref, get, set, update, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
-  authDomain: "project-ema-998cd.firebaseapp.com",
-  databaseURL: "https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "project-ema-998cd",
-  storageBucket: "project-ema-998cd.firebasestorage.app",
-  messagingSenderId: "356739398551",
-  appId: "1:356739398551:web:df3f900d8d7a07c38e22d2"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
+      authDomain: "project-ema-998cd.firebaseapp.com",
+      databaseURL: "https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "project-ema-998cd",
+      storageBucket: "project-ema-998cd.firebasestorage.app",
+      messagingSenderId: "356739398551",
+      appId: "1:356739398551:web:df3f900d8d7a07c38e22d2"
+    };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-const provincesAndDistricts = {
-  "Western": ["Colombo","Gampaha","Kalutara"],
-  "Central": ["Kandy","Matale","Nuwara Eliya"],
-  "Southern": ["Galle","Matara","Hambantota"],
-  "Northern": ["Jaffna","Kilinochchi","Mannar","Vavuniya","Mullaitivu"],
-  "Eastern": ["Trincomalee","Batticaloa","Ampara"],
-  "North Western": ["Kurunegala","Puttalam"],
-  "North Central": ["Anuradhapura","Polonnaruwa"],
-  "Uva": ["Badulla","Monaragala"],
-  "Sabaragamuwa": ["Ratnapura","Kegalle"]
-};
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id') || localStorage.getItem('emaUserId');
+    if (!userId) window.location.href = 'index.html';
 
-const districtCoords = {
-  "Colombo":[6.9271,79.8612],"Gampaha":[7.0873,79.9998],"Kalutara":[6.5854,80.1070],
-  "Kandy":[7.2906,80.6337],"Matale":[7.4699,80.6234],"Nuwara Eliya":[6.9497,80.7891],
-  "Galle":[6.0535,80.2210],"Matara":[5.9549,80.5540],"Hambantota":[6.1246,81.1185],
-  "Jaffna":[9.6615,80.0255],"Kilinochchi":[9.3868,80.3995],"Mannar":[8.9770,79.9090],
-  "Vavuniya":[8.7516,80.4970],"Mullaitivu":[9.2671,80.8140],
-  "Trincomalee":[8.5874,81.2152],"Batticaloa":[7.7180,81.7000],"Ampara":[7.3000,81.6667],
-  "Kurunegala":[7.4863,80.3629],"Puttalam":[8.0408,79.8283],
-  "Anuradhapura":[8.3114,80.4037],"Polonnaruwa":[7.9390,81.0027],
-  "Badulla":[6.9895,81.0550],"Monaragala":[6.8726,81.3500],
-  "Ratnapura":[6.6930,80.3860],"Kegalle":[7.2513,80.3464]
-};
+    const userCard = document.getElementById('user-card');
+    const userPic = document.getElementById('user-pic');
+    const greeting = document.getElementById('greeting');
+    const agentStatus = document.getElementById('agent-status');
+    const agentBtn = document.getElementById('agent-action-btn');
 
-const qs = new URLSearchParams(location.search);
-let emaId = qs.get('id') || localStorage.getItem('emaUserId');
-if(!emaId){ location.href = 'index.html'; }
+    function showPopup(id) { document.getElementById(id).classList.remove('hidden'); }
+    function hidePopup(id) { document.getElementById(id).classList.add('hidden'); }
 
-const els = {
-  greeting: document.getElementById('greeting'),
-  firstName: document.getElementById('firstName'),
-  emaIdBadge: document.getElementById('emaIdBadge'),
-  districtBadge: document.getElementById('districtBadge'),
-  userAvatar: document.getElementById('userAvatar'),
-  userCard: document.getElementById('userCard'),
-  editPopup: document.getElementById('editPopup'),
-  agentPopup: document.getElementById('agentPopup'),
-  editAvatar: document.getElementById('editAvatar'),
-  editAvatarPreview: document.getElementById('editAvatarPreview'),
-  editName: document.getElementById('editName'),
-  editPhone: document.getElementById('editPhone'),
-  editEmail: document.getElementById('editEmail'),
-  editProvince: document.getElementById('editProvince'),
-  editDistrict: document.getElementById('editDistrict'),
-  saveProfileBtn: document.getElementById('saveProfileBtn'),
-  signOutBtn: document.getElementById('signOutBtn'),
-  weatherTitle: document.getElementById('weatherTitle'),
-  tempNow: document.getElementById('tempNow'),
-  weatherDesc: document.getElementById('weatherDesc'),
-  agentCard: document.getElementById('agentCard'),
-  agentStatusPill: document.getElementById('agentStatusPill'),
-  agentIdText: document.getElementById('agentIdText'),
-  agentActionBtn: document.getElementById('agentActionBtn'),
-  agentName: document.getElementById('agentName'),
-  agentPhone: document.getElementById('agentPhone'),
-  agentNic: document.getElementById('agentNic'),
-  agentDistrict: document.getElementById('agentDistrict'),
-  registerAgentBtn: document.getElementById('registerAgentBtn'),
-  toast: document.getElementById('toast'),
-  toastText: document.getElementById('toastText')
-};
-
-function showToast(t){ els.toastText.textContent=t; els.toast.classList.remove('hidden'); setTimeout(()=>els.toast.classList.add('hidden'),1800); }
-function openPopup(p){ p.classList.add('show'); }
-function closePopup(p){ p.classList.remove('show'); }
-document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',e=>{ const id=e.currentTarget.getAttribute('data-close'); closePopup(document.getElementById(id)); }));
-
-function timeGreeting(){
-  const h=new Date().getHours();
-  if(h<12) return 'Good Morning';
-  if(h<17) return 'Good Afternoon';
-  if(h<21) return 'Good Evening';
-  return 'Good Night';
-}
-
-function populateProvinces(select){
-  select.innerHTML = '<option value="">Select Province</option>';
-  Object.keys(provincesAndDistricts).forEach(p=>{
-    const o=document.createElement('option');o.value=p;o.textContent=p;select.appendChild(o);
-  });
-}
-function populateDistricts(province, select){
-  select.innerHTML = '<option value="">Select District</option>';
-  const list = provincesAndDistricts[province] || [];
-  list.forEach(d=>{ const o=document.createElement('option');o.value=d;o.textContent=d;select.appendChild(o); });
-}
-
-function normalizePhone(v){
-  const s=v.replace(/\s+/g,'');
-  if(/^(\+94|0)(7\d{8})$/.test(s)){
-    return s.startsWith('+94')? s : '+94'+s.slice(1);
-  }
-  return null;
-}
-
-function loadWeather(district){
-  const coords = districtCoords[district] || districtCoords['Colombo'];
-  const [lat,lon]=coords;
-  els.weatherTitle.textContent = district ? district+' • Now' : 'Weather';
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`)
-    .then(r=>r.json())
-    .then(j=>{
-      const t = Math.round(j.current?.temperature_2m ?? NaN);
-      els.tempNow.textContent = isNaN(t)? '—' : t+'°C';
-      const code=j.current?.weather_code;
-      const map={0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Depositing rime fog',51:'Light drizzle',53:'Drizzle',55:'Dense drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Snow',80:'Rain showers',95:'Thunderstorm'};
-      els.weatherDesc.textContent = map[code] || '—';
-    })
-    .catch(()=>{ els.tempNow.textContent='—'; els.weatherDesc.textContent='Unavailable'; });
-}
-
-function setCookie(name,value,days){
-  const d=new Date(); d.setTime(d.getTime()+days*24*60*60*1000);
-  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; expires=${d.toUTCString()}; path=/; SameSite=Lax`;
-}
-function deleteCookie(name){
-  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-}
-
-let userData=null;
-
-async function hydrate(){
-  els.greeting.textContent = timeGreeting();
-  els.emaIdBadge.textContent = emaId;
-  try{
-    const snap = await get(child(ref(db), `users/${emaId}`));
-    if(!snap.exists()){ showToast('Session expired'); setTimeout(()=>location.href='index.html',900); return; }
-    userData = snap.val() || {};
-    const fullName = userData.name || 'User';
-    const first = fullName.trim().split(/\s+/)[0];
-    els.firstName.textContent = first;
-    els.districtBadge.textContent = userData.district ? userData.district+', '+(userData.province||'') : '—';
-    if(userData.profilePic){ els.userAvatar.src = userData.profilePic; }
-    populateProvinces(els.editProvince);
-    els.editName.value = userData.name || '';
-    els.editPhone.value = userData.phone || '';
-    els.editEmail.value = userData.email || '';
-    if(userData.province){ els.editProvince.value = userData.province; populateDistricts(userData.province, els.editDistrict); }
-    if(userData.district){ els.editDistrict.value = userData.district; }
-    els.editAvatarPreview.innerHTML = userData.profilePic ? `<img src="${userData.profilePic}" class="w-full h-full object-cover rounded-full">` : `<span class="text-gray-400">Upload</span>`;
-    loadWeather(userData.district || '');
-    const agent = userData.agent || null;
-    const cachedAgentId = localStorage.getItem('agentId');
-    if(agent && agent.agentId){
-      els.agentStatusPill.textContent='Agent';
-      els.agentStatusPill.className='badge bg-green-50 text-green-700';
-      els.agentIdText.textContent='Agent ID: '+agent.agentId;
-      els.agentActionBtn.textContent='View';
-      localStorage.setItem('agentId', agent.agentId);
-      localStorage.setItem('agentStatus','true');
-      setCookie('agentId', agent.agentId, 365);
-      setCookie('agentStatus','true',365);
-    }else if(cachedAgentId){
-      els.agentStatusPill.textContent='Agent';
-      els.agentStatusPill.className='badge bg-green-50 text-green-700';
-      els.agentIdText.textContent='Agent ID: '+cachedAgentId;
-      els.agentActionBtn.textContent='View';
-    }else{
-      els.agentStatusPill.textContent='Not an Agent';
-      els.agentStatusPill.className='badge bg-gray-100 text-gray-600';
-      els.agentIdText.textContent='No Agent ID';
-      els.agentActionBtn.textContent='Register';
+    function getGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Morning";
+      if (hour < 18) return "Afternoon";
+      return "Evening";
     }
-    els.agentDistrict.innerHTML='';
-    const ad=document.createElement('option'); ad.value=userData.district||''; ad.textContent=userData.district||'Select District'; els.agentDistrict.appendChild(ad);
-    if(userData.province){ provincesAndDistricts[userData.province].forEach(d=>{ if(d!==userData.district){ const o=document.createElement('option'); o.value=d; o.textContent=d; els.agentDistrict.appendChild(o);} }); }
-  }catch(e){
-    showToast('Failed to load user');
-  }
-}
 
-els.userCard.addEventListener('click',()=>openPopup(els.editPopup));
-els.editProvince.addEventListener('change',e=>populateDistricts(e.target.value, els.editDistrict));
-
-els.editAvatar.addEventListener('change',e=>{
-  const file=e.target.files?.[0]; if(!file) return;
-  const r=new FileReader();
-  r.onload=ev=>{ els.editAvatarPreview.innerHTML=`<img src="${ev.target.result}" class="w-full h-full object-cover rounded-full">`; els.editAvatarPreview.dataset.b64 = ev.target.result; };
-  r.readAsDataURL(file);
-});
-els.editAvatarPreview.addEventListener('click',()=>els.editAvatar.click());
-
-els.saveProfileBtn.addEventListener('click',async ()=>{
-  const name = els.editName.value.trim();
-  if(name.length<5){ showToast('Name must be at least 5 chars'); return; }
-  const phoneNorm = normalizePhone(els.editPhone.value.trim());
-  if(!phoneNorm){ showToast('Invalid Sri Lankan phone'); return; }
-  const email = els.editEmail.value.trim();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showToast('Invalid email'); return; }
-  const province = els.editProvince.value;
-  const district = els.editDistrict.value;
-  if(!province||!district){ showToast('Select province & district'); return; }
-  const payload = { name, phone: phoneNorm, email, province, district };
-  const img = els.editAvatarPreview.dataset.b64 || userData.profilePic || null;
-  if(img) payload.profilePic = img;
-  try{
-    await update(ref(db, `users/${emaId}`), payload);
-    closePopup(els.editPopup);
-    showToast('Profile saved');
-    userData = { ...(userData||{}), ...payload };
-    els.firstName.textContent = name.split(/\s+/)[0];
-    if(payload.profilePic){ els.userAvatar.src = payload.profilePic; }
-    els.districtBadge.textContent = `${district}, ${province}`;
-    loadWeather(district);
-  }catch(e){ showToast('Save failed'); }
-});
-
-els.signOutBtn.addEventListener('click',()=>{
-  localStorage.removeItem('emaUserId');
-  localStorage.removeItem('agentId');
-  localStorage.removeItem('agentStatus');
-  deleteCookie('agentId'); deleteCookie('agentStatus');
-  location.href='index.html';
-});
-
-els.agentActionBtn.addEventListener('click',()=>{
-  if(els.agentActionBtn.textContent==='Register'){
-    els.agentName.value = userData?.name||'';
-    els.agentPhone.value = userData?.phone||'';
-    els.agentNic.value = '';
-    els.agentDistrict.value = userData?.district||'';
-    openPopup(els.agentPopup);
-  }else{
-    showToast(els.agentIdText.textContent);
-  }
-});
-
-function validNIC(n){
-  return /^(\d{9}[vVxX]|\d{12})$/.test(n.trim());
-}
-
-function genAgentId(){
-  let n = Math.floor(1000 + Math.random()*9000);
-  return `${n}-A`;
-}
-
-els.registerAgentBtn.addEventListener('click', async ()=>{
-  const name = els.agentName.value.trim();
-  if(name.length<5){ showToast('Name too short'); return; }
-  const phone = normalizePhone(els.agentPhone.value.trim());
-  if(!phone){ showToast('Invalid phone'); return; }
-  const nic = els.agentNic.value.trim();
-  if(!validNIC(nic)){ showToast('Invalid NIC'); return; }
-  const district = els.agentDistrict.value || userData?.district || '';
-  if(!district){ showToast('Select district'); return; }
-  try{
-    let id = genAgentId();
-    let exists=true; let guard=0;
-    while(exists && guard<10){
-      const s = await get(child(ref(db), `users/${emaId}/agent`));
-      exists = s.exists() && s.val()?.agentId === id;
-      if(exists){ id = genAgentId(); }
-      guard++;
+    function generateWeather(district) {
+      const conditions = ["Sunny", "Cloudy", "Rainy", "Windy", "Stormy"];
+      const condition = conditions[Math.floor(Math.random() * conditions.length)];
+      const temp = (25 + Math.random() * 10).toFixed(1);
+      const humidity = (60 + Math.random() * 20).toFixed(0);
+      const wind = (5 + Math.random() * 10).toFixed(1);
+      document.getElementById('weather-location').innerText = `Weather in ${district}`;
+      document.getElementById('weather-temp').innerText = `${temp}°C`;
+      document.getElementById('weather-condition').innerText = condition;
+      document.getElementById('weather-humidity').innerText = `Humidity: ${humidity}%`;
+      document.getElementById('weather-wind').innerText = `Wind: ${wind} km/h`;
     }
-    const payload = { agentId:id, name, phone, nic, district, createdAt: Date.now() };
-    await set(ref(db, `users/${emaId}/agent`), payload);
-    localStorage.setItem('agentId', id);
-    localStorage.setItem('agentStatus','true');
-    setCookie('agentId', id, 365);
-    setCookie('agentStatus','true', 365);
-    els.agentStatusPill.textContent='Agent';
-    els.agentStatusPill.className='badge bg-green-50 text-green-700';
-    els.agentIdText.textContent='Agent ID: '+id;
-    els.agentActionBtn.textContent='View';
-    closePopup(els.agentPopup);
-    showToast('Registered as Agent');
-  }catch(e){
-    showToast('Registration failed');
-  }
-});
 
-function tickGreeting(){ els.greeting.textContent = timeGreeting(); }
-setInterval(tickGreeting, 60*1000);
+    async function loadUser() {
+      const snapshot = await get(child(ref(db), `users/${userId}`));
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        userPic.src = data.profilePic || "";
+        const firstName = data.name.split(" ")[0];
+        greeting.innerText = `Hello ${firstName}, Good ${getGreeting()}`;
+        generateWeather(data.district);
 
-await hydrate();
-</script>
+        if (data.agent) {
+          agentStatus.innerText = `Agent (ID: ${data.agent.id})`;
+          agentBtn.innerText = "Unregister";
+          agentBtn.classList.remove('bg-green-600');
+          agentBtn.classList.add('bg-red-600');
+        }
+      } else {
+        window.location.href = 'index.html';
+      }
+    }
+
+    document.getElementById('signout-btn').addEventListener('click', () => {
+      localStorage.clear();
+      document.cookie = "emaUserId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      window.location.href = 'index.html';
+    });
+
+    userCard.addEventListener('click', () => {
+      showPopup('edit-popup');
+    });
+
+    document.getElementById('save-user-btn').addEventListener('click', async () => {
+      const name = document.getElementById('edit-name').value;
+      const phone = document.getElementById('edit-phone').value;
+      const email = document.getElementById('edit-email').value;
+      await update(ref(db, `users/${userId}`), { name, phone, email });
+      hidePopup('edit-popup');
+      loadUser();
+    });
+
+    agentBtn.addEventListener('click', () => {
+      if (agentBtn.innerText === "Register") {
+        showPopup('agent-popup');
+      } else {
+        update(ref(db, `users/${userId}/agent`), null);
+        localStorage.removeItem('agentId');
+        agentStatus.innerText = "Not an Agent";
+        agentBtn.innerText = "Register";
+        agentBtn.classList.remove('bg-red-600');
+        agentBtn.classList.add('bg-green-600');
+      }
+    });
+
+    document.getElementById('register-agent-btn').addEventListener('click', async () => {
+      const name = document.getElementById('agent-name').value;
+      const phone = document.getElementById('agent-phone').value;
+      const nic = document.getElementById('agent-nic').value;
+      const id = `${Math.floor(1000 + Math.random() * 9000)}-A`;
+      await set(ref(db, `users/${userId}/agent`), { id, name, phone, nic });
+      localStorage.setItem('agentId', id);
+      hidePopup('agent-popup');
+      loadUser();
+    });
+
+    loadUser();
+  </script>
 </body>
 </html>
