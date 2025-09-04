@@ -36,7 +36,8 @@
       #map,
       #map2 {
         height: 250px;
-        border-radius: 0.75rem
+        border-radius: 0.75rem;
+        z-index: 0 !important
       }
 
       .popup {
@@ -188,17 +189,18 @@
         getDatabase,
         ref,
         push,
-        set
+        set,
+        get,
+        child
       } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
       const firebaseConfig = {
         apiKey: "AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
         authDomain: "project-ema-998cd.firebaseapp.com",
+        databaseURL: "https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "project-ema-998cd",
         storageBucket: "project-ema-998cd.firebasestorage.app",
         messagingSenderId: "356739398551",
-        appId: "1:356739398551:web:df3f900d8d7a07c38e22d2",
-        measurementId: "G-RHDKXHXFLE",
-        databaseURL: "https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        appId: "1:356739398551:web:df3f900d8d7a07c38e22d2"
       };
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
@@ -278,13 +280,24 @@
       document.getElementById("injElephant").onchange = e => {
         document.getElementById("elephantDetails").classList.toggle("hidden", !e.target.checked)
       };
-      const user = JSON.parse(localStorage.getItem("emaUser") || "{}");
-      document.getElementById("sightingName").value = user.fullName || "—";
-      document.getElementById("accidentName").value = user.fullName || "—";
-      document.getElementById("sightingPhone").value = user.phone || "—";
-      document.getElementById("accidentPhone").value = user.phone || "—";
-      document.getElementById("sightingDistrict").value = user.district || "Unknown";
-      document.getElementById("accidentDistrict").value = user.district || "Unknown";
+      // fetch logged in user info
+      const emaUserId = localStorage.getItem("emaUserId");
+      if (!emaUserId) {
+        showPopup("No user logged in");
+      } else {
+        const snap = await get(child(ref(db), "users/" + emaUserId));
+        if (snap.exists()) {
+          const user = snap.val();
+          document.getElementById("sightingName").value = user.name || "—";
+          document.getElementById("accidentName").value = user.name || "—";
+          document.getElementById("sightingPhone").value = user.phone || "—";
+          document.getElementById("accidentPhone").value = user.phone || "—";
+          document.getElementById("sightingDistrict").value = user.district || "Unknown";
+          document.getElementById("accidentDistrict").value = user.district || "Unknown";
+        } else {
+          showPopup("User not found in database");
+        }
+      }
 
       function fileToBase64(file) {
         return new Promise((res, rej) => {
@@ -313,9 +326,9 @@
           lng: currentLng,
           elephants: count1,
           danger: document.getElementById("dangerLevel").value,
-          district: user.district || "Unknown",
-          name: user.fullName || "—",
-          phone: user.phone || "—",
+          district: document.getElementById("sightingDistrict").value,
+          name: document.getElementById("sightingName").value,
+          phone: document.getElementById("sightingPhone").value,
           image: img64,
           timestamp: Date.now()
         };
@@ -337,9 +350,9 @@
           humanText: document.getElementById("humanText").value || "",
           injElephant: document.getElementById("injElephant").checked,
           elephantText: document.getElementById("elephantText").value || "",
-          district: user.district || "Unknown",
-          name: user.fullName || "—",
-          phone: user.phone || "—",
+          district: document.getElementById("accidentDistrict").value,
+          name: document.getElementById("accidentName").value,
+          phone: document.getElementById("accidentPhone").value,
           image: img64,
           timestamp: Date.now()
         };
