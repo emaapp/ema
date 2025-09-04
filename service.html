@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>EMA • Service Bot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/3d5586fda0.js" crossorigin="anonymous"></script>
+    <style>
+      .card {
+        background: #fff;
+        border-radius: 1rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, .08)
+      }
+
+      .bubble {
+        max-width: 75%;
+        padding: .7rem .9rem;
+        border-radius: 1rem;
+        line-height: 1.4;
+        word-wrap: break-word
+      }
+
+      .bubble.user {
+        margin-left: auto;
+        background: #111827;
+        color: #fff;
+        border-bottom-right-radius: .3rem
+      }
+
+      .bubble.bot {
+        margin-right: auto;
+        background: #f3f4f6;
+        color: #111827;
+        border-bottom-left-radius: .3rem
+      }
+
+      .loader {
+        width: 20px;
+        aspect-ratio: 2;
+        --_g: no-repeat radial-gradient(circle closest-side, #111827 92%, #0000);
+        background: var(--_g) 0/calc(100%/3) 100% var(--_g) 50%/calc(100%/3) 100% var(--_g) 100%/calc(100%/3) 100%;
+        animation: l 1s infinite linear
+      }
+
+      @keyframes l {
+        33% {
+          background-size: calc(100%/3) 0, var(--_g) 50%/calc(100%/3) 100%, var(--_g) 100%/calc(100%/3) 100%
+        }
+
+        50% {
+          background-size: calc(100%/3) 100%, var(--_g) 50%/calc(100%/3) 0, var(--_g) 100%/calc(100%/3) 100%
+        }
+
+        66% {
+          background-size: calc(100%/3) 100%, var(--_g) 50%/calc(100%/3) 100%, var(--_g) 100%/calc(100%/3) 0
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen text-gray-800">
+    <header class="w-full sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-100">
+      <div class="max-w-screen-md mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" class="w-8 h-8" />
+          <span class="font-semibold">EMA • Service Bot</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="home.html" class="px-3 py-2 rounded-lg bg-gray-900 text-white hover:bg-black flex items-center gap-2">
+            <i class="fas fa-house"></i>Home </a>
+        </div>
+      </div>
+    </header>
+    <main class="max-w-screen-md mx-auto px-4 py-4 space-y-4">
+      <section class="card p-4">
+        <div id="chat" class="min-h-[55vh] max-h-[65vh] overflow-y-auto pr-1 flex flex-col gap-2"></div>
+        <div class="mt-3 flex items-center gap-2">
+          <input id="msg" type="text" class="flex-1 px-4 py-3 border border-gray-300 rounded-xl outline-none" placeholder="Type your message…" />
+          <button id="send" class="px-4 py-3 rounded-xl bg-gray-900 text-white hover:bg-black flex items-center gap-2">
+            <i class="fas fa-paper-plane"></i>Send </button>
+        </div>
+      </section>
+      <section class="card p-3">
+        <p class="font-semibold mb-2">Quick Questions</p>
+        <div id="chips" class="flex flex-wrap gap-2">
+          <button data-q="How to log in to EMA?" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Login</button>
+          <button data-q="How to submit a sighting report?" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Sighting Report</button>
+          <button data-q="How to submit an accident report?" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Accident Report</button>
+          <button data-q="How to register as an agent?" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Agent Registration</button>
+          <button data-q="How to retrieve my lost ID?" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Retrieve ID</button>
+          <button data-q="What if my report is not showing?" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Report Not Showing</button>
+          <button data-q="Tell me about elephants" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Elephants</button>
+          <button data-q="Tell me about wildlife" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Wildlife</button>
+          <button data-q="Who is Aveesha Ninsara Pelawaththa?" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Creator</button>
+          <button data-q="Report a bug in EMA app" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Report Bug</button>
+        </div>
+      </section>
+    </main>
+    <script>
+      const chat = document.getElementById("chat");
+      const msg = document.getElementById("msg");
+      const send = document.getElementById("send");
+      const chips = document.getElementById("chips");
+      const API_KEY = "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";
+      const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+      const MODEL = "mistralai/mistral-7b-instruct:free";
+
+      function appendBubble(role, text) {
+        const d = document.createElement("div");
+        d.className = "bubble " + (role === "user" ? "user" : "bot");
+        d.textContent = text;
+        chat.appendChild(d);
+        chat.scrollTop = chat.scrollHeight
+      }
+
+      function appendLoader() {
+        const d = document.createElement("div");
+        d.className = "bubble bot";
+        d.innerHTML = ' < div class = "loader" > < /div>';d.id="loader";chat.appendChild(d);chat.scrollTop=chat.scrollHeight}
+
+        function removeLoader() {
+          const l = document.getElementById("loader");
+          if (l) l.remove()
+        }
+        async function sendMessage(t) {
+          appendBubble("user", t);
+          msg.value = "";
+          appendLoader();
+          try {
+            const res = await fetch(API_URL, {
+              method: "POST",
+              headers: {
+                "Authorization": "Bearer " + API_KEY,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                model: MODEL,
+                messages: [{
+                  role: "system",
+                  content: `You are Ali AI, the EMA Service Bot created by Aveesha Ninsara Pelawaththa. 
+Keep all answers **extremely short** (1–2 sentences max). 
+Only answer about EMA app usage, logging in, editing profile, signing out, agent system, elephants, wildlife, conservation, reporting, appeals, ID retrieval, and bug reporting. 
+If asked outside this scope, reply: "Not my topic." 
+If user reports a bug, reply: "Bug noted. Fixing." 
+Always reply concise and short as hell.`
+                }, {
+                  role: "user",
+                  content: t
+                }]
+              })
+            });
+            removeLoader();
+            if (!res.ok) {
+              appendBubble("bot", "Service error.");
+              return
+            }
+            const data = await res.json();
+            const reply = data.choices?.[0]?.message?.content || "…";
+            appendBubble("bot", reply)
+          } catch (e) {
+            removeLoader();
+            appendBubble("bot", "Network error.")
+          }
+        }
+        send.onclick = () => {
+          const t = msg.value.trim();
+          if (t) sendMessage(t)
+        };
+        msg.addEventListener("keydown", e => {
+          if (e.key === "Enter") send.onclick()
+        });
+        chips.querySelectorAll("button").forEach(b => b.addEventListener("click", () => sendMessage(b.dataset.q)));
+        appendBubble("bot", "👋 I’m Ali AI. Ask short about EMA or elephants.");
+    </script>
+  </body>
+</html>
