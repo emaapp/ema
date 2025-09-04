@@ -1,317 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>EMA - Alerts</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-      body {
-        font-family: sans-serif;
-        margin: 0;
-        padding: 0;
-        background: #fff;
-        display: flex;
-        flex-direction: column;
-        align-items: center
-      }
+<head>
+  <meta charset="UTF-8">
+  <title>EMA - Alerts</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    body{font-family:sans-serif;margin:0;padding:0;background:#fff;display:flex;flex-direction:column;align-items:center}
+    header{width:100%;background:#4CAF50;color:#fff;padding:1rem;display:flex;justify-content:space-between;align-items:center}
+    .btn{background:#4CAF50;color:#fff;border:none;padding:.5rem 1rem;margin:.3rem;border-radius:8px;cursor:pointer}
+    .btn.red{background:#e53935}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;width:100%;padding:1rem}
+    .card{background:#fafafa;border-radius:12px;box-shadow:0 2px 5px rgba(0,0,0,0.1);padding:1rem}
+    .card h3{margin:.2rem 0}
+    .popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:1000}
+    .popup.show{display:flex}
+    .popup-content{background:#fff;padding:1rem;border-radius:12px;max-width:500px;width:90%;max-height:90%;overflow:auto;text-align:center}
+    .popup-content img{max-width:100%}
+    .filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin:.5rem}
+  </style>
+</head>
+<body>
+<header>
+  <button class="btn" onclick="location.href='home.html'">Home</button>
+  <button class="btn" onclick="openAppealPopup()">Report Not Showing</button>
+</header>
 
-      header {
-        width: 100%;
-        background: #4CAF50;
-        color: #fff;
-        padding: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center
-      }
+<div class="filter-bar">
+  <select id="filterType">
+    <option value="all">All</option>
+    <option value="sightings">Sightings</option>
+    <option value="accidents">Accidents</option>
+  </select>
+  <select id="filterDistrict">
+    <option value="">All Districts</option>
+    <option>Colombo</option><option>Gampaha</option><option>Kalutara</option>
+    <option>Kandy</option><option>Matale</option><option>Nuwara Eliya</option>
+    <option>Galle</option><option>Matara</option><option>Hambantota</option>
+    <option>Jaffna</option><option>Kilinochchi</option><option>Mannar</option>
+    <option>Vavuniya</option><option>Mullaitivu</option><option>Trincomalee</option>
+    <option>Batticaloa</option><option>Ampara</option><option>Kurunegala</option>
+    <option>Puttalam</option><option>Anuradhapura</option><option>Polonnaruwa</option>
+    <option>Badulla</option><option>Monaragala</option><option>Ratnapura</option>
+    <option>Kegalle</option>
+  </select>
+  <button class="btn" onclick="loadReports()">Filter</button>
+</div>
 
-      .btn {
-        background: #4CAF50;
-        color: #fff;
-        border: none;
-        padding: .5rem 1rem;
-        margin: .3rem;
-        border-radius: 8px;
-        cursor: pointer
-      }
+<div id="reportGrid" class="grid"></div>
 
-      .btn.red {
-        background: #e53935
-      }
+<div id="popup" class="popup"><div class="popup-content"><div id="popupMsg"></div><button class="btn" onclick="closePopup()">Close</button></div></div>
 
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1rem;
-        width: 100%;
-        padding: 1rem
-      }
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getDatabase, ref, get, set, push, update } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
-      .card {
-        background: #fafafa;
-        border-radius: 12px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        padding: 1rem
-      }
+const firebaseConfig={
+  apiKey:"AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
+  authDomain:"project-ema-998cd.firebaseapp.com",
+  databaseURL:"https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"project-ema-998cd",
+  storageBucket:"project-ema-998cd.firebasestorage.app",
+  messagingSenderId:"356739398551",
+  appId:"1:356739398551:web:df3f900d8d7a07c38e22d2"
+};
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
 
-      .card h3 {
-        margin: .2rem 0
-      }
+const grid=document.getElementById("reportGrid");
 
-      .progress {
-        width: 90%;
-        height: 12px;
-        background: #ddd;
-        border-radius: 6px;
-        overflow: hidden;
-        margin: 1rem auto
-      }
+function showPopup(msg){document.getElementById("popupMsg").innerHTML=msg;document.getElementById("popup").classList.add("show")}
+function closePopup(){document.getElementById("popup").classList.remove("show")}
 
-      .progress-bar {
-        height: 100%;
-        width: 0;
-        background: #4CAF50;
-        transition: width .3s
-      }
+async function loadReports(){
+  grid.innerHTML="";
+  let type=document.getElementById("filterType").value;
+  let district=document.getElementById("filterDistrict").value;
+  let allReports=[];
+  let paths=[];
+  if(type==="all"||type==="sightings")paths.push("reports/sightings");
+  if(type==="all"||type==="accidents")paths.push("reports/accidents");
 
-      .popup {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000
+  for(let p of paths){
+    let snap=await get(ref(db,p));
+    if(snap.exists()){
+      let obj=snap.val();
+      for(let [id,val] of Object.entries(obj)){
+        if(val.fraudStatus)continue;
+        val._id=id;val._type=p.split("/")[1];
+        allReports.push(val);
       }
+    }
+  }
 
-      .popup.show {
-        display: flex
-      }
+  allReports.forEach(r=>{
+    if(district && r.district!==district) return;
+    let c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<h3>${r._type}</h3><p>${r.district||""}</p><button class="btn" onclick='openReport(${JSON.stringify(JSON.stringify(r))})'>View</button>`;
+    grid.appendChild(c);
+  })
+}
 
-      .popup-content {
-        background: #fff;
-        padding: 1rem;
-        border-radius: 12px;
-        max-width: 500px;
-        width: 90%;
-        max-height: 90%;
-        overflow: auto;
-        text-align: center
-      }
+window.openReport=(str)=>{
+  let r=JSON.parse(str);
+  let html=`<h3>${r._type} Report</h3>
+  <p><b>District:</b> ${r.district||""}</p>
+  <p><b>Name:</b> ${r.name||""}</p>
+  <p><b>Phone:</b> ${r.phone||""}</p>
+  <p><b>Elephants:</b> ${r.elephants||""}</p>
+  <div>
+    <button class='btn' onclick='viewMap(${r.lat},${r.lng})'>Map</button>
+    <button class='btn' onclick='viewImage("${r.image||""}")'>Image</button>
+    <button class='btn' onclick='downloadPDF(${JSON.stringify(JSON.stringify(r))})'>PDF</button>
+  </div>`;
+  if(localStorage.getItem("agentStatus")==="true"){
+    html+=`<button class="btn red" onclick='deleteReport(${JSON.stringify(JSON.stringify(r))})'>Delete</button>`;
+  }
+  showPopup(html);
+}
 
-      .popup-content img {
-        max-width: 100%
-      }
+window.viewMap=(lat,lng)=>{
+  showPopup(`<div id='map' style='height:300px'></div>`);
+  setTimeout(()=>{
+    let m=L.map("map").setView([lat,lng],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
+    L.marker([lat,lng]).addTo(m);
+  },300)
+}
 
-      .filter-bar {
-        display: flex;
-        gap: .5rem;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin: .5rem
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <button class="btn" onclick="location.href='home.html'">Home</button>
-      <button class="btn" onclick="showPopup('Your report may be deleted by an agent. Book an appeal.
-								<br>
-									<button class=&quot;btn&quot; onclick=&quot;bookAppeal()&quot;>Book Appeal</button>')">Report Not Showing </button>
-    </header>
-    <div class="filter-bar">
-      <select id="filterType">
-        <option value="all">All</option>
-        <option value="sightings">Sightings</option>
-        <option value="accidents">Accidents</option>
-      </select>
-      <input id="filterDistrict" placeholder="Filter by district">
-      <button class="btn" onclick="loadReports()">Filter</button>
-    </div>
-    <div class="progress">
-      <div id="progressBar" class="progress-bar"></div>
-    </div>
-    <div id="reportGrid" class="grid"></div>
-    <div id="popup" class="popup">
-      <div class="popup-content">
-        <div id="popupMsg"></div>
-        <button class="btn" onclick="closePopup()">Close</button>
-      </div>
-    </div>
-    <script type="module">
-      import {
-        initializeApp
-      } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-      import {
-        getDatabase,
-        ref,
-        get,
-        set,
-        push,
-        update
-      } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
-      const firebaseConfig = {
-        apiKey: "AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
-        authDomain: "project-ema-998cd.firebaseapp.com",
-        databaseURL: "https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "project-ema-998cd",
-        storageBucket: "project-ema-998cd.firebasestorage.app",
-        messagingSenderId: "356739398551",
-        appId: "1:356739398551:web:df3f900d8d7a07c38e22d2"
-      };
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
-      const grid = document.getElementById("reportGrid");
-      const progressBar = document.getElementById("progressBar");
+window.viewImage=(img)=>{if(!img)showPopup("No image");else showPopup(`<img src='${img}'>`)}
 
-      function showPopup(msg) {
-        document.getElementById("popupMsg").innerHTML = msg;
-        document.getElementById("popup").classList.add("show")
-      }
+window.downloadPDF=(str)=>{
+  let r=JSON.parse(str);
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  doc.text("EMA - Elephant Monitoring App",10,10);
+  doc.text("Report Details:",10,20);
+  Object.entries(r).forEach(([k,v],i)=>{
+    if(typeof v!=="object")doc.text(`${k}: ${v}`,10,30+i*10)
+  });
+  doc.save("report.pdf")
+}
 
-      function closePopup() {
-        document.getElementById("popup").classList.remove("show")
-      }
-      async function loadReports() {
-        grid.innerHTML = "";
-        progressBar.style.width = "0%";
-        let type = document.getElementById("filterType").value;
-        let district = document.getElementById("filterDistrict").value.trim().toLowerCase();
-        let allReports = [];
-        let paths = [];
-        if (type === "all" || type === "sightings") paths.push("reports/sightings");
-        if (type === "all" || type === "accidents") paths.push("reports/accidents");
-        for (let p of paths) {
-          let snap = await get(ref(db, p));
-          if (snap.exists()) {
-            let obj = snap.val();
-            for (let [id, val] of Object.entries(obj)) {
-              if (val.fraudStatus) continue;
-              val._id = id;
-              val._type = p.split("/")[1];
-              allReports.push(val)
-            }
-          }
-        }
-        let total = allReports.length;
-        let loaded = 0;
-        for (let r of allReports) {
-          loaded++;
-          progressBar.style.width = (loaded / total * 100) + "%";
-          if (district && !(r.district || "").toLowerCase().includes(district)) continue;
-          let c = document.createElement("div");
-          c.className = "card";
-          c.innerHTML = `
-									<h3>${r._type}</h3>
-									<p>${r.district||""}</p>
-									<button class="btn" onclick='openReport(${JSON.stringify(JSON.stringify(r))})'>➔</button>`;
-          grid.appendChild(c)
-        }
-      }
-      window.openReport = (str) => {
-        let r = JSON.parse(str);
-        let html = `
-									<h3>${r._type} Report</h3>
-									<p>
-										<b>District:</b> ${r.district||""}
-									</p>
-									<p>
-										<b>Name:</b> ${r.name||""}
-									</p>
-									<p>
-										<b>Phone:</b> ${r.phone||""}
-									</p>
-									<p>
-										<b>Details:</b> Elephants: ${r.elephants||""} ${r.danger||""}
-									</p>
-									<div>
-										<button class='btn' onclick='viewMap(${r.lat},${r.lng})'>Map</button>
-										<button class='btn' onclick='viewImage("${r.image||""}")'>Image</button>
-										<button class='btn' onclick='downloadPDF(${JSON.stringify(JSON.stringify(r))})'>PDF</button>
-									</div>`;
-        if (localStorage.getItem("agentStatus") === "true") {
-          html += `
-									<button class="btn red" onclick='deleteReport(${JSON.stringify(JSON.stringify(r))})'>Delete Report</button>`
-        }
-        showPopup(html)
-      }
-      window.viewMap = (lat, lng) => {
-        showPopup(`
-									<div id='map' style='height:300px'></div>`);
-        setTimeout(() => {
-          let m = L.map("map").setView([lat, lng], 13);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
-          L.marker([lat, lng]).addTo(m)
-        }, 300)
-      }
-      window.viewImage = (img) => {
-        if (!img) showPopup("No image");
-        else showPopup(`
-									<img src='${img}'>`)
-      }
-      window.downloadPDF = (str) => {
-        let r = JSON.parse(str);
-        const {
-          jsPDF
-        } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text("EMA - Elephant Monitoring App", 10, 10);
-        doc.text("Report Details:", 10, 20);
-        Object.entries(r).forEach(([k, v], i) => {
-          if (typeof v !== "object") doc.text(`${k}: ${v}`, 10, 30 + i * 10)
-        });
-        doc.save("report.pdf")
-      }
-      window.deleteReport = (str) => {
-        let r = JSON.parse(str);
-        let reasons = ["Spam", "Fake", "Duplicate", "Misleading", "Offensive", "Not Related", "Test Data", "Incorrect Location", "Invalid Data", "Other"];
-        let opts = reasons.map(x => `
-										<option>${x}</option>`).join("");
-        let html = `
-										<h3>Delete Report</h3>
-										<select id='delReason'>${opts}</select>
-										<textarea id='delDesc' placeholder='Description'></textarea>
-										<label>
-											<input type='checkbox' id='delAgree'> I hereby claim this is a fake/mislead report and I say I'm authorized for this deletion
-											</label>
-											<input id='delAgent' placeholder='Enter Agent ID'>
-												<button class='btn red' onclick='confirmDelete("${r._type}","${r._id}")'>Delete</button>`;
-        showPopup(html)
-      }
-      window.confirmDelete = async (type, id) => {
-        let agent = localStorage.getItem("agentId");
-        let given = document.getElementById("delAgent").value;
-        if (agent !== given) {
-          showPopup("Your agent ID is wrong. Try again (Only use the agent ID that you got for this device)");
-          return
-        }
-        if (!document.getElementById("delAgree").checked) {
-          showPopup("You must agree");
-          return
-        }
-        await update(ref(db, `reports/${type}/${id}`), {
-          fraudStatus: true,
-          deleteReason: document.getElementById("delReason").value,
-          deleteDesc: document.getElementById("delDesc").value
-        });
-        showPopup("Report Deleted")
-      }
-      window.bookAppeal = async () => {
-        let uid = localStorage.getItem("emaUserId") || "unknown";
-        await set(push(ref(db, "appeals")), {
-          uid,
-          timestamp: Date.now()
-        });
-        showPopup("Your appeal has been booked. We are working on that.")
-      }
-      loadReports();
-    </script>
-  </body>
+window.deleteReport=(str)=>{
+  let r=JSON.parse(str);
+  let reasons=["Spam","Fake","Duplicate","Misleading","Offensive","Not Related","Test Data","Incorrect Location","Invalid Data","Other"];
+  let opts=reasons.map(x=>`<option>${x}</option>`).join("");
+  let html=`<h3>Delete Report</h3>
+  <select id='delReason'>${opts}</select>
+  <textarea id='delDesc' placeholder='Description'></textarea>
+  <label><input type='checkbox' id='delAgree'> I hereby claim this is a fake/mislead report and I say I'm authorized for this deletion</label>
+  <input id='delAgent' placeholder='Enter Agent ID'>
+  <button class='btn red' onclick='confirmDelete("${r._type}","${r._id}")'>Delete</button>`;
+  showPopup(html);
+}
+
+window.confirmDelete=async(type,id)=>{
+  let agent=localStorage.getItem("agentId");
+  let given=document.getElementById("delAgent").value;
+  if(agent!==given){showPopup("Your agent ID is wrong. Try again");return}
+  if(!document.getElementById("delAgree").checked){showPopup("You must agree");return}
+  await update(ref(db,`reports/${type}/${id}`),{
+    fraudStatus:true,
+    deleteReason:document.getElementById("delReason").value,
+    deleteDesc:document.getElementById("delDesc").value
+  });
+  showPopup("Report Deleted");
+  loadReports();
+}
+
+window.openAppealPopup=()=>{
+  showPopup(`Your report may be deleted by an agent.<br><button class="btn" onclick="bookAppeal()">Book Appeal</button>`)
+}
+
+window.bookAppeal=async()=>{
+  let uid=localStorage.getItem("emaUserId")||"unknown";
+  await set(push(ref(db,"appeals")),{uid,timestamp:Date.now()});
+  showPopup("Your appeal has been booked. We are working on that.");
+}
+
+loadReports();
+</script>
+</body>
 </html>
