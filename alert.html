@@ -2,109 +2,148 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMA • Alerts</title>
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <title>EMA - Alerts</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
-      .card {
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
         background: #fff;
-        border-radius: 1rem;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, .08)
+        display: flex;
+        flex-direction: column;
+        align-items: center
+      }
+
+      header {
+        width: 100%;
+        background: #4CAF50;
+        color: #fff;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center
+      }
+
+      .btn {
+        background: #4CAF50;
+        color: #fff;
+        border: none;
+        padding: .5rem 1rem;
+        margin: .3rem;
+        border-radius: 8px;
+        cursor: pointer
+      }
+
+      .btn.red {
+        background: #e53935
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        width: 100%;
+        padding: 1rem
+      }
+
+      .card {
+        background: #fafafa;
+        border-radius: 12px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 1rem
+      }
+
+      .card h3 {
+        margin: .2rem 0
+      }
+
+      .progress {
+        width: 90%;
+        height: 12px;
+        background: #ddd;
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 1rem auto
+      }
+
+      .progress-bar {
+        height: 100%;
+        width: 0;
+        background: #4CAF50;
+        transition: width .3s
       }
 
       .popup {
         position: fixed;
-        inset: 0;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
         display: none;
-        align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, .5);
-        z-index: 50
+        align-items: center;
+        z-index: 1000
       }
 
       .popup.show {
         display: flex
       }
 
-      .popup-card {
-        background: white;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        max-width: 24rem;
-        width: 90%
+      .popup-content {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90%;
+        overflow: auto;
+        text-align: center
       }
 
-      .icon-btn {
-        display: inline-flex;
-        align-items: center;
+      .popup-content img {
+        max-width: 100%
+      }
+
+      .filter-bar {
+        display: flex;
+        gap: .5rem;
+        flex-wrap: wrap;
         justify-content: center;
-        border-radius: .75rem;
-        padding: .5rem .75rem;
-        font-weight: 600
-      }
-
-      #mapPopup {
-        height: 300px;
-        width: 100%;
-        border-radius: .75rem
-      }
-
-      #progressBar {
-        height: 10px;
-        border-radius: 10px;
-        background: #e5e7eb;
-        overflow: hidden
-      }
-
-      #progressBar div {
-        height: 100%;
-        width: 0;
-        background: #2563eb;
-        transition: width .3s
+        margin: .5rem
       }
     </style>
   </head>
-  <body class="bg-gray-50 text-gray-800">
-    <header class="w-full sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-100">
-      <div class="max-w-screen-lg mx-auto px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" class="w-8 h-8" alt="EMA">
-          <span class="font-bold">EMA Alerts</span>
-        </div>
-        <div class="flex gap-2">
-          <button id="appealBtn" class="icon-btn bg-yellow-500 text-white">Report Not Showing</button>
-          <a href="home.html" class="icon-btn bg-gray-900 text-white">Home</a>
-        </div>
-      </div>
+  <body>
+    <header>
+      <button class="btn" onclick="location.href='home.html'">Home</button>
+      <button class="btn" onclick="showPopup('Your report may be deleted by an agent. Book an appeal.
+								<br>
+									<button class=&quot;btn&quot; onclick=&quot;bookAppeal()&quot;>Book Appeal</button>')">Report Not Showing </button>
     </header>
-    <main class="max-w-screen-lg mx-auto px-4 py-5 space-y-4">
-      <div>
-        <label class="text-sm font-medium">Filters</label>
-        <div class="flex gap-2 mt-1">
-          <select id="filterType" class="p-2 border rounded-lg">
-            <option value="all">All Types</option>
-            <option value="sighting">Sightings</option>
-            <option value="accident">Accidents</option>
-          </select>
-          <select id="filterDistrict" class="p-2 border rounded-lg">
-            <option value="all">All Districts</option>
-          </select>
-        </div>
-      </div>
-      <div id="progressBar">
-        <div></div>
-      </div>
-      <section id="reportsContainer" class="grid gap-3"></section>
-    </main>
-    <div id="popup" class="popup">
-      <div class="popup-card space-y-3" id="popupContent"></div>
+    <div class="filter-bar">
+      <select id="filterType">
+        <option value="all">All</option>
+        <option value="sightings">Sightings</option>
+        <option value="accidents">Accidents</option>
+      </select>
+      <input id="filterDistrict" placeholder="Filter by district">
+      <button class="btn" onclick="loadReports()">Filter</button>
     </div>
-    <div id="subPopup" class="popup">
-      <div class="popup-card space-y-3" id="subPopupContent"></div>
+    <div class="progress">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+    <div id="reportGrid" class="grid"></div>
+    <div id="popup" class="popup">
+      <div class="popup-content">
+        <div id="popupMsg"></div>
+        <button class="btn" onclick="closePopup()">Close</button>
+      </div>
     </div>
     <script type="module">
       import {
@@ -114,10 +153,9 @@
         getDatabase,
         ref,
         get,
-        child,
-        update,
+        set,
         push,
-        set
+        update
       } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
       const firebaseConfig = {
         apiKey: "AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
@@ -130,213 +168,150 @@
       };
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
-      let agentStatus = localStorage.getItem("agentStatus") === "true";
-      let agentId = localStorage.getItem("agentId") || "";
+      const grid = document.getElementById("reportGrid");
+      const progressBar = document.getElementById("progressBar");
 
-      function showPopup(html) {
-        document.getElementById("popupContent").innerHTML = html;
+      function showPopup(msg) {
+        document.getElementById("popupMsg").innerHTML = msg;
         document.getElementById("popup").classList.add("show")
       }
 
       function closePopup() {
         document.getElementById("popup").classList.remove("show")
       }
-
-      function showSubPopup(html) {
-        document.getElementById("subPopupContent").innerHTML = html;
-        document.getElementById("subPopup").classList.add("show")
-      }
-
-      function closeSubPopup() {
-        document.getElementById("subPopup").classList.remove("show")
-      }
-      document.getElementById("popup").addEventListener("click", e => {
-        if (e.target.id === "popup") closePopup()
-      })
-      document.getElementById("subPopup").addEventListener("click", e => {
-        if (e.target.id === "subPopup") closeSubPopup()
-      })
       async function loadReports() {
-        const container = document.getElementById("reportsContainer");
-        container.innerHTML = "";
-        let snap = await get(child(ref(db), "reports"));
-        if (!snap.exists()) return;
-        let reports = [];
-        if (snap.val().sightings)
-          for (let [id, data] of Object.entries(snap.val().sightings)) {
-            if (!data.fraudStatus) reports.push({
-              id,
-              type: "sighting",
-              ...data
-            })
-          }
-        if (snap.val().accidents)
-          for (let [id, data] of Object.entries(snap.val().accidents)) {
-            if (!data.fraudStatus) reports.push({
-              id,
-              type: "accident",
-              ...data
-            })
-          }
-        let progress = document.querySelector("#progressBar div");
-        let total = reports.length;
-        let loaded = 0;
-        for (let r of reports) {
-          loaded++;
-          progress.style.width = (loaded / total * 100) + "%";
-          let card = document.createElement("div");
-          card.className = "card p-3 flex justify-between items-center";
-          card.innerHTML = `
-							<div>
-								<div class="font-semibold">${r.type.toUpperCase()}</div>
-								<div class="text-sm text-gray-600">${r.district||"Unknown"} • ${new Date(r.timestamp).toLocaleString()}</div>
-							</div>
-							<button class="icon-btn bg-gray-200">➔</button>`;
-          card.querySelector("button").onclick = () => openReport(r);
-          container.appendChild(card);
-          if (!Array.from(document.getElementById("filterDistrict").options).some(o => o.value === r.district)) {
-            let opt = document.createElement("option");
-            opt.value = r.district;
-            opt.textContent = r.district;
-            document.getElementById("filterDistrict").appendChild(opt)
+        grid.innerHTML = "";
+        progressBar.style.width = "0%";
+        let type = document.getElementById("filterType").value;
+        let district = document.getElementById("filterDistrict").value.trim().toLowerCase();
+        let allReports = [];
+        let paths = [];
+        if (type === "all" || type === "sightings") paths.push("reports/sightings");
+        if (type === "all" || type === "accidents") paths.push("reports/accidents");
+        for (let p of paths) {
+          let snap = await get(ref(db, p));
+          if (snap.exists()) {
+            let obj = snap.val();
+            for (let [id, val] of Object.entries(obj)) {
+              if (val.fraudStatus) continue;
+              val._id = id;
+              val._type = p.split("/")[1];
+              allReports.push(val)
+            }
           }
         }
+        let total = allReports.length;
+        let loaded = 0;
+        for (let r of allReports) {
+          loaded++;
+          progressBar.style.width = (loaded / total * 100) + "%";
+          if (district && !(r.district || "").toLowerCase().includes(district)) continue;
+          let c = document.createElement("div");
+          c.className = "card";
+          c.innerHTML = `
+									<h3>${r._type}</h3>
+									<p>${r.district||""}</p>
+									<button class="btn" onclick='openReport(${JSON.stringify(JSON.stringify(r))})'>➔</button>`;
+          grid.appendChild(c)
+        }
       }
-
-      function openReport(r) {
+      window.openReport = (str) => {
+        let r = JSON.parse(str);
         let html = `
-							<h2 class="text-lg font-bold">${r.type.toUpperCase()} Report</h2>
-							<p>
-								<b>District:</b> ${r.district||"Unknown"}
-							</p>
-							<p>
-								<b>Name:</b> ${r.name||"—"}
-							</p>
-							<p>
-								<b>Phone:</b> ${r.phone||"—"}
-							</p>
-							<p>
-								<b>Details:</b> ${r.danger||r.humanText||r.elephantText||"—"}
-							</p>
-							<div class="flex gap-2">
-								<button class="icon-btn bg-blue-600 text-white" onclick="showMap(${r.lat},${r.lng})">Map</button>
-								<button class="icon-btn bg-green-600 text-white" onclick="showImage('${r.image||""}')">Image</button>
-								<button class="icon-btn bg-gray-800 text-white" onclick="downloadPDF(${JSON.stringify(JSON.stringify(r))})">PDF</button>
-							</div>`;
-        if (agentStatus) html += `
-							<button class="icon-btn bg-red-600 text-white mt-2" onclick="deleteReportForm('${r.type}','${r.id}')">🗑 Delete</button>`;
-        html += `
-							<button class="icon-btn bg-gray-200 mt-2" onclick="closePopup()">Close</button>`;
+									<h3>${r._type} Report</h3>
+									<p>
+										<b>District:</b> ${r.district||""}
+									</p>
+									<p>
+										<b>Name:</b> ${r.name||""}
+									</p>
+									<p>
+										<b>Phone:</b> ${r.phone||""}
+									</p>
+									<p>
+										<b>Details:</b> Elephants: ${r.elephants||""} ${r.danger||""}
+									</p>
+									<div>
+										<button class='btn' onclick='viewMap(${r.lat},${r.lng})'>Map</button>
+										<button class='btn' onclick='viewImage("${r.image||""}")'>Image</button>
+										<button class='btn' onclick='downloadPDF(${JSON.stringify(JSON.stringify(r))})'>PDF</button>
+									</div>`;
+        if (localStorage.getItem("agentStatus") === "true") {
+          html += `
+									<button class="btn red" onclick='deleteReport(${JSON.stringify(JSON.stringify(r))})'>Delete Report</button>`
+        }
         showPopup(html)
       }
-      window.showMap = (lat, lng) => {
-        showSubPopup(`
-							<h3 class="font-bold mb-2">Map</h3>
-							<div id="mapPopup"></div>
-							<button class="icon-btn bg-gray-200 mt-2" onclick="closeSubPopup()">Close</button>`);
+      window.viewMap = (lat, lng) => {
+        showPopup(`
+									<div id='map' style='height:300px'></div>`);
         setTimeout(() => {
-          let m = L.map("mapPopup").setView([lat, lng], 13);
+          let m = L.map("map").setView([lat, lng], 13);
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m);
           L.marker([lat, lng]).addTo(m)
         }, 300)
       }
-      window.showImage = (src) => {
-        showSubPopup(`
-							<h3 class="font-bold mb-2">Image</h3>${src?`
-							<img src="${src}" class="rounded-lg w-full">`:"No image"}
-								<button class="icon-btn bg-gray-200 mt-2" onclick="closeSubPopup()">Close</button>`)
+      window.viewImage = (img) => {
+        if (!img) showPopup("No image");
+        else showPopup(`
+									<img src='${img}'>`)
       }
-      window.downloadPDF = (reportStr) => {
-        let r = JSON.parse(reportStr);
+      window.downloadPDF = (str) => {
+        let r = JSON.parse(str);
         const {
           jsPDF
         } = window.jspdf;
-        let doc = new jsPDF();
-        doc.setFontSize(16);
-        doc.text("EMA - Elephant Monitoring App", 10, 20);
-        doc.setFontSize(12);
-        let y = 40;
-        for (let [k, v] of Object.entries(r)) {
-          doc.text(`${k}: ${v}`, 10, y);
-          y += 10
-        }
-        doc.setFontSize(50);
-        doc.setTextColor(200, 200, 200);
-        doc.text("EMA", 105, 150, {
-          align: "center",
-          angle: 45
+        const doc = new jsPDF();
+        doc.text("EMA - Elephant Monitoring App", 10, 10);
+        doc.text("Report Details:", 10, 20);
+        Object.entries(r).forEach(([k, v], i) => {
+          if (typeof v !== "object") doc.text(`${k}: ${v}`, 10, 30 + i * 10)
         });
         doc.save("report.pdf")
       }
-      window.deleteReportForm = (type, id) => {
-        let reasons = ["Spam", "Duplicate", "Fake", "Misleading", "Offensive", "Irrelevant", "Incorrect Location", "Wrong District", "Test Report", "Other"];
-        let opts = reasons.map(r => `
-								<option>${r}</option>`).join("");
-        showSubPopup(`
-								<h3 class="font-bold mb-2">Delete Report</h3>
-								<select id="delReason" class="w-full p-2 border rounded-lg">${opts}</select>
-								<textarea id="delDesc" class="w-full p-2 border rounded-lg mt-2" placeholder="Description"></textarea>
-								<label class="flex items-center gap-2 mt-2">
-									<input type="checkbox" id="agree"> I hereby claim this is a fake/mislead report and I say I'm authorized for this deletion
-									</label>
-									<input id="delAgentId" placeholder="Enter Agent ID" class="w-full p-2 border rounded-lg mt-2">
-										<button class="icon-btn bg-red-600 text-white mt-2 w-full" onclick="confirmDelete('${type}','${id}')">Delete</button>`)
+      window.deleteReport = (str) => {
+        let r = JSON.parse(str);
+        let reasons = ["Spam", "Fake", "Duplicate", "Misleading", "Offensive", "Not Related", "Test Data", "Incorrect Location", "Invalid Data", "Other"];
+        let opts = reasons.map(x => `
+										<option>${x}</option>`).join("");
+        let html = `
+										<h3>Delete Report</h3>
+										<select id='delReason'>${opts}</select>
+										<textarea id='delDesc' placeholder='Description'></textarea>
+										<label>
+											<input type='checkbox' id='delAgree'> I hereby claim this is a fake/mislead report and I say I'm authorized for this deletion
+											</label>
+											<input id='delAgent' placeholder='Enter Agent ID'>
+												<button class='btn red' onclick='confirmDelete("${r._type}","${r._id}")'>Delete</button>`;
+        showPopup(html)
       }
       window.confirmDelete = async (type, id) => {
-        let reason = document.getElementById("delReason").value,
-          desc = document.getElementById("delDesc").value,
-          agree = document.getElementById("agree").checked,
-          aid = document.getElementById("delAgentId").value;
-        if (!agree) {
-          alert("You must agree");
+        let agent = localStorage.getItem("agentId");
+        let given = document.getElementById("delAgent").value;
+        if (agent !== given) {
+          showPopup("Your agent ID is wrong. Try again (Only use the agent ID that you got for this device)");
           return
         }
-        if (aid !== agentId) {
-          alert("Your agent ID is wrong. Try again");
+        if (!document.getElementById("delAgree").checked) {
+          showPopup("You must agree");
           return
         }
-        await update(ref(db, "reports/" + type + "s/" + id), {
+        await update(ref(db, `reports/${type}/${id}`), {
           fraudStatus: true,
-          deleteReason: reason,
-          deleteDesc: desc
+          deleteReason: document.getElementById("delReason").value,
+          deleteDesc: document.getElementById("delDesc").value
         });
-        closeSubPopup();
-        closePopup();
-        loadReports()
-      }
-      document.getElementById("appealBtn").onclick = () => {
-        showPopup(`
-										<h3 class="font-bold">Your report may be deleted by an agent</h3>
-										<p>Book an appeal.</p>
-										<button class="icon-btn bg-yellow-500 text-white mt-2" onclick="bookAppeal()">Book Appeal</button>
-										<button class="icon-btn bg-gray-200 mt-2" onclick="closePopup()">Close</button>`)
+        showPopup("Report Deleted")
       }
       window.bookAppeal = async () => {
         let uid = localStorage.getItem("emaUserId") || "unknown";
-        await push(ref(db, "appeals"), {
-          userId: uid,
+        await set(push(ref(db, "appeals")), {
+          uid,
           timestamp: Date.now()
         });
-        closePopup();
-        showPopup(`
-										<p>Your appeal has been booked. We are working on that.</p>
-										<button class="icon-btn bg-gray-200 mt-2" onclick="closePopup()">Close</button>`)
+        showPopup("Your appeal has been booked. We are working on that.")
       }
-      document.getElementById("filterType").onchange = () => filterReports()
-      document.getElementById("filterDistrict").onchange = () => filterReports()
-
-      function filterReports() {
-        let type = document.getElementById("filterType").value;
-        let dist = document.getElementById("filterDistrict").value;
-        for (let card of document.querySelectorAll("#reportsContainer>div")) {
-          let txt = card.innerText;
-          let show = true;
-          if (type !== "all" && !txt.includes(type.toUpperCase())) show = false;
-          if (dist !== "all" && !txt.includes(dist)) show = false;
-          card.style.display = show ? "flex" : "none"
-        }
-      }
-      loadReports()
+      loadReports();
     </script>
   </body>
 </html>
