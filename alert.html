@@ -91,8 +91,8 @@ html,body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica 
       <p id="detailExtra">—</p>
     </div>
     <div class="mt-3 flex items-center gap-2">
-      <button id="btnMap" class="icon-btn bg-blue-600 text-white hover:bg-blue-700" title="Map">🗺️</button>
-      <button id="btnImage" class="icon-btn bg-purple-600 text-white hover:bg-purple-700" title="Image">🖼️</button>
+      <button id="btnMap" class="icon-btn bg-blue-600 text-white hover:bg-blue-700" title="Map">🗓️</button>
+      <button id="btnImage" class="icon-btn bg-purple-600 text-white hover:bg-purple-700" title="Image">📖</button>
       <button id="btnPDF" class="icon-btn bg-teal-600 text-white hover:bg-teal-700" title="PDF">📄</button>
       <button id="btnDelete" class="ml-auto icon-btn bg-red-600 text-white hover:bg-red-700 hidden" title="Delete">🗑️</button>
     </div>
@@ -258,7 +258,7 @@ function renderCards(){
   list.forEach(r=>{
     const c=document.createElement("div");
     c.className="card p-3 flex items-center gap-3";
-    const icon = r.type==="sightings"?"🐘":"⚠️";
+    const icon = r.type==="sightings"?"𓃰":"⚠";
     const title = r.type==="sightings"?"Sighting":"Accident";
     const badge = r.type==="sightings"?"bg-blue-50 text-blue-700":"bg-red-50 text-red-700";
     const imgThumb = r.image? `<img src="${r.image}" class="w-12 h-12 rounded-lg object-cover border">` : `<div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">—</div>`;
