@@ -4,16 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EMA • Analytics</title>
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-800">
-  <header class="w-full sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-100">
+  <header class="w-full sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
     <div class="max-w-screen-md mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" class="w-8 h-8" alt="EMA">
-        <span class="font-bold">EMA Analytics</span>
-      </div>
+      <h1 class="font-bold text-lg flex items-center gap-2">
+        <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" class="w-8 h-8">
+        EMA Analytics
+      </h1>
       <a href="home.html" class="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-black">Home</a>
     </div>
   </header>
@@ -21,32 +20,29 @@
   <main class="max-w-screen-md mx-auto px-4 py-6 space-y-6">
     <section class="bg-white shadow rounded-2xl p-6 space-y-4">
       <h2 class="text-xl font-semibold">Overview</h2>
-      <div id="progressContainer" class="w-full bg-gray-200 rounded-full h-3">
-        <div id="progressBar" class="bg-blue-600 h-3 rounded-full w-0"></div>
-      </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div class="p-4 bg-gray-100 rounded-xl text-center">
-          <p class="text-2xl font-bold" id="totalReports">0</p>
+          <p class="text-2xl font-bold" id="totalReports">–</p>
           <p class="text-sm">Total Reports</p>
         </div>
         <div class="p-4 bg-blue-100 rounded-xl text-center">
-          <p class="text-2xl font-bold" id="sightings">0</p>
+          <p class="text-2xl font-bold" id="sightings">–</p>
           <p class="text-sm">Sightings</p>
         </div>
         <div class="p-4 bg-red-100 rounded-xl text-center">
-          <p class="text-2xl font-bold" id="accidents">0</p>
+          <p class="text-2xl font-bold" id="accidents">–</p>
           <p class="text-sm">Accidents</p>
         </div>
         <div class="p-4 bg-green-100 rounded-xl text-center">
-          <p class="text-2xl font-bold" id="users">0</p>
+          <p class="text-2xl font-bold" id="users">–</p>
           <p class="text-sm">Users</p>
         </div>
         <div class="p-4 bg-yellow-100 rounded-xl text-center">
-          <p class="text-2xl font-bold" id="dangerHigh">0</p>
+          <p class="text-2xl font-bold" id="dangerHigh">–</p>
           <p class="text-sm">High Danger</p>
         </div>
         <div class="p-4 bg-orange-100 rounded-xl text-center">
-          <p class="text-2xl font-bold" id="dangerMed">0</p>
+          <p class="text-2xl font-bold" id="dangerMed">–</p>
           <p class="text-sm">Medium Danger</p>
         </div>
       </div>
@@ -59,10 +55,9 @@
     </section>
   </main>
 
-  <!-- Popup -->
   <div id="popup" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-xl p-6 max-w-lg w-full space-y-4">
-      <h3 id="popupTitle" class="text-lg font-semibold">Message</h3>
+      <h3 id="popupTitle" class="text-lg font-semibold">Popup</h3>
       <div id="popupContent" class="text-sm max-h-96 overflow-auto"></div>
       <div class="flex gap-2 justify-end">
         <button id="popupClose" class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black">Close</button>
@@ -93,43 +88,37 @@
     const users = document.getElementById("users");
     const dangerHigh = document.getElementById("dangerHigh");
     const dangerMed = document.getElementById("dangerMed");
-    const progressBar = document.getElementById("progressBar");
 
     async function loadAnalytics() {
-      let steps = 3;
-      let done = 0;
-      function updateProgress() {
-        done++;
-        progressBar.style.width = `${(done / steps) * 100}%`;
-      }
+      try {
+        const snapSightings = await get(child(ref(db), "reports/sightings"));
+        const snapAccidents = await get(child(ref(db), "reports/accidents"));
+        const snapUsers = await get(child(ref(db), "users"));
 
-      const snapSightings = await get(child(ref(db), "reports/sightings"));
-      updateProgress();
-      const snapAccidents = await get(child(ref(db), "reports/accidents"));
-      updateProgress();
-      const snapUsers = await get(child(ref(db), "users"));
-      updateProgress();
+        const sightData = snapSightings.exists() ? snapSightings.val() : {};
+        const accData = snapAccidents.exists() ? snapAccidents.val() : {};
+        const userData = snapUsers.exists() ? snapUsers.val() : {};
 
-      let sightCount = snapSightings.exists() ? Object.keys(snapSightings.val()).length : 0;
-      let accCount = snapAccidents.exists() ? Object.keys(snapAccidents.val()).length : 0;
-      let userCount = snapUsers.exists() ? Object.keys(snapUsers.val()).length : 0;
+        const sightCount = Object.keys(sightData).length;
+        const accCount = Object.keys(accData).length;
+        const userCount = Object.keys(userData).length;
 
-      sightings.textContent = sightCount;
-      accidents.textContent = accCount;
-      users.textContent = userCount;
-      totalReports.textContent = sightCount + accCount;
+        sightings.textContent = sightCount;
+        accidents.textContent = accCount;
+        users.textContent = userCount;
+        totalReports.textContent = sightCount + accCount;
 
-      let high = 0, med = 0;
-      if (snapSightings.exists()) {
-        Object.values(snapSightings.val()).forEach(r => {
+        let high = 0, med = 0;
+        Object.values(sightData).forEach(r => {
           if (r.danger === "High") high++;
           if (r.danger === "Medium") med++;
         });
+        dangerHigh.textContent = high;
+        dangerMed.textContent = med;
+      } catch (e) {
+        console.error("Analytics load error", e);
       }
-      dangerHigh.textContent = high;
-      dangerMed.textContent = med;
     }
-
     loadAnalytics();
 
     function downloadJSON(filename, data) {
