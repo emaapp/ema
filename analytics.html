@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EMA • Analytics</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-800">
   <header class="w-full sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
@@ -18,7 +20,20 @@
   </header>
 
   <main class="max-w-screen-md mx-auto px-4 py-6 space-y-6">
-    <section class="bg-white shadow rounded-2xl p-6 space-y-4">
+    <!-- Progress Bars -->
+    <div id="progressWrap" class="space-y-3">
+      <div class="bg-gray-200 rounded-full h-4 overflow-hidden">
+        <div id="progressReports" class="bg-blue-600 h-4 text-xs text-white text-center">0%</div>
+      </div>
+      <div class="bg-gray-200 rounded-full h-4 overflow-hidden">
+        <div id="progressUsers" class="bg-green-600 h-4 text-xs text-white text-center">0%</div>
+      </div>
+      <div class="bg-gray-200 rounded-full h-4 overflow-hidden">
+        <div id="progressAdmin" class="bg-red-600 h-4 text-xs text-white text-center">0%</div>
+      </div>
+    </div>
+
+    <section id="analyticsSection" class="bg-white shadow rounded-2xl p-6 space-y-4 hidden">
       <h2 class="text-xl font-semibold">Overview</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div class="p-4 bg-gray-100 rounded-xl text-center">
@@ -47,6 +62,7 @@
         </div>
       </div>
       <button id="downloadReports" class="mt-4 w-full bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black">Download Reports</button>
+      <button id="downloadUsersPdf" class="mt-2 w-full bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800">Download Users as PDF</button>
     </section>
 
     <section class="bg-white shadow rounded-2xl p-6 space-y-4">
@@ -55,6 +71,7 @@
     </section>
   </main>
 
+  <!-- Popup -->
   <div id="popup" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-xl p-6 max-w-lg w-full space-y-4">
       <h3 id="popupTitle" class="text-lg font-semibold">Popup</h3>
@@ -82,42 +99,67 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const totalReports = document.getElementById("totalReports");
-    const sightings = document.getElementById("sightings");
-    const accidents = document.getElementById("accidents");
-    const users = document.getElementById("users");
-    const dangerHigh = document.getElementById("dangerHigh");
-    const dangerMed = document.getElementById("dangerMed");
+    const progReports = document.getElementById("progressReports");
+    const progUsers = document.getElementById("progressUsers");
+    const progAdmin = document.getElementById("progressAdmin");
+    const progressWrap = document.getElementById("progressWrap");
+    const analyticsSection = document.getElementById("analyticsSection");
+
+    function updateBar(el, percent) {
+      el.style.width = percent + "%";
+      el.textContent = percent + "%";
+    }
 
     async function loadAnalytics() {
-      try {
-        const snapSightings = await get(child(ref(db), "reports/sightings"));
-        const snapAccidents = await get(child(ref(db), "reports/accidents"));
-        const snapUsers = await get(child(ref(db), "users"));
+      updateBar(progReports, 20);
+      const snapSightings = await get(child(ref(db), "reports/sightings"));
+      updateBar(progReports, 60);
+      const snapAccidents = await get(child(ref(db), "reports/accidents"));
+      updateBar(progReports, 100);
 
-        const sightData = snapSightings.exists() ? snapSightings.val() : {};
-        const accData = snapAccidents.exists() ? snapAccidents.val() : {};
-        const userData = snapUsers.exists() ? snapUsers.val() : {};
+      updateBar(progUsers, 30);
+      const snapUsers = await get(child(ref(db), "users"));
+      updateBar(progUsers, 100);
 
-        const sightCount = Object.keys(sightData).length;
-        const accCount = Object.keys(accData).length;
-        const userCount = Object.keys(userData).length;
+      const sightData = snapSightings.exists() ? snapSightings.val() : {};
+      const accData = snapAccidents.exists() ? snapAccidents.val() : {};
+      const userData = snapUsers.exists() ? snapUsers.val() : {};
 
-        sightings.textContent = sightCount;
-        accidents.textContent = accCount;
-        users.textContent = userCount;
-        totalReports.textContent = sightCount + accCount;
+      const trim = (obj) => {
+        const newObj = {};
+        for (let [k, v] of Object.entries(obj)) {
+          newObj[k] = { ...v };
+          if (newObj[k].image) newObj[k].image = "[base64 trimmed]";
+        }
+        return newObj;
+      };
 
-        let high = 0, med = 0;
-        Object.values(sightData).forEach(r => {
-          if (r.danger === "High") high++;
-          if (r.danger === "Medium") med++;
-        });
-        dangerHigh.textContent = high;
-        dangerMed.textContent = med;
-      } catch (e) {
-        console.error("Analytics load error", e);
-      }
+      const sightCount = Object.keys(sightData).length;
+      const accCount = Object.keys(accData).length;
+      const userCount = Object.keys(userData).length;
+
+      document.getElementById("sightings").textContent = sightCount;
+      document.getElementById("accidents").textContent = accCount;
+      document.getElementById("users").textContent = userCount;
+      document.getElementById("totalReports").textContent = sightCount + accCount;
+
+      let high = 0, med = 0;
+      Object.values(sightData).forEach(r => {
+        if (r.danger === "High") high++;
+        if (r.danger === "Medium") med++;
+      });
+      document.getElementById("dangerHigh").textContent = high;
+      document.getElementById("dangerMed").textContent = med;
+
+      analyticsSection.classList.remove("hidden");
+      progressWrap.classList.add("hidden");
+
+      // store trimmed DB globally
+      window.emaData = {
+        sightings: trim(sightData),
+        accidents: trim(accData),
+        users: userData
+      };
     }
     loadAnalytics();
 
@@ -129,14 +171,28 @@
       link.click();
     }
 
-    document.getElementById("downloadReports").onclick = async () => {
-      const snapSightings = await get(child(ref(db), "reports/sightings"));
-      const snapAccidents = await get(child(ref(db), "reports/accidents"));
-      let allReports = {
-        sightings: snapSightings.exists() ? snapSightings.val() : {},
-        accidents: snapAccidents.exists() ? snapAccidents.val() : {}
-      };
-      downloadJSON("reports.json", allReports);
+    document.getElementById("downloadReports").onclick = () => {
+      downloadJSON("reports.json", {
+        sightings: window.emaData.sightings,
+        accidents: window.emaData.accidents
+      });
+    };
+
+    document.getElementById("downloadUsersPdf").onclick = async () => {
+      const container = document.createElement("div");
+      container.className = "p-4 bg-white text-xs";
+      container.innerHTML = "<h2 class='text-lg font-bold mb-2'>Users</h2><pre>" + JSON.stringify(window.emaData.users, null, 2) + "</pre>";
+      document.body.appendChild(container);
+      const canvas = await html2canvas(container);
+      const imgData = canvas.toDataURL("image/png");
+      document.body.removeChild(container);
+
+      const pdf = new jspdf.jsPDF("p", "mm", "a4");
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save("users.pdf");
     };
 
     const popup = document.getElementById("popup");
@@ -155,10 +211,23 @@
       document.getElementById("adminLogin").onclick = async () => {
         let pwd = document.getElementById("adminPass").value;
         if (pwd === "aveesha@homewhen10") {
+          updateBar(progAdmin, 30);
           const snap = await get(ref(db));
+          updateBar(progAdmin, 100);
+          progressWrap.classList.add("hidden");
+
+          const trimmed = {};
+          for (let [k, v] of Object.entries(snap.val() || {})) {
+            trimmed[k] = v;
+            if (typeof v === "object") {
+              for (let [kk, vv] of Object.entries(v)) {
+                if (vv.image) trimmed[k][kk].image = "[base64 trimmed]";
+              }
+            }
+          }
           popupTitle.textContent = "Admin Panel";
           popupContent.innerHTML = `
-            <pre class="p-3 bg-gray-100 rounded-lg text-xs overflow-auto max-h-80">${JSON.stringify(snap.val(), null, 2)}</pre>
+            <pre class="p-3 bg-gray-100 rounded-lg text-xs overflow-auto max-h-80">${JSON.stringify(trimmed, null, 2)}</pre>
             <button id="downloadDB" class="mt-3 w-full bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-black">Download Database</button>
           `;
           document.getElementById("downloadDB").onclick = () => {
