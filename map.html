@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EMA • Map</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica Neue,Arial,Noto Sans,sans-serif}
+    .card{background:#fff;border-radius:1rem;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .icon-btn{display:inline-flex;align-items:center;justify-content:center;border-radius:.75rem;padding:.5rem .9rem;font-weight:600}
+    #map{position:fixed;inset:56px 0 0 0}
+    #loader{position:fixed;inset:0;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;z-index:500}
+    .dot{width:.6rem;height:.6rem;border-radius:9999px;background:#000;animation:blink 1s infinite ease-in-out}
+    .dot:nth-child(2){animation-delay:.2s}
+    .dot:nth-child(3){animation-delay:.4s}
+    @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+    .popup-cta{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:400}
+    .settings-modal,.notice-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:600}
+    .settings-modal.show,.notice-modal.show{display:flex}
+    .leaflet-control-layers{max-height:240px;overflow:auto}
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <header class="w-full fixed top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-100">
+    <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" class="w-8 h-8" alt="EMA">
+        <span class="font-bold">EMA Map</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="settingsBtn" class="icon-btn bg-gray-200 hover:bg-gray-300">Settings</button>
+        <a href="home.html" class="icon-btn bg-gray-900 text-white hover:bg-black">Home</a>
+      </div>
+    </div>
+  </header>
+
+  <div id="loader" class="flex-col gap-3">
+    <div class="flex gap-2 justify-center"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="text-sm text-gray-700 text-center">Loading latest reports…</div>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="popup-cta hidden" id="zoneBanner">
+    <div class="card px-4 py-3 flex items-center gap-3 border border-yellow-300">
+      <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+      <div class="text-sm">You’re in a predicted elephant sighting zone. Proceed with caution.</div>
+      <button id="closeZoneBanner" class="ml-2 text-xs px-3 py-1 rounded-lg bg-gray-900 text-white">Close</button>
+    </div>
+  </div>
+
+  <div class="settings-modal" id="settingsModal">
+    <div class="card p-5 w-[95%] max-w-sm">
+      <h3 class="text-lg font-semibold mb-3">Map Settings</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="text-sm">Proximity alert distance (meters)</label>
+          <input id="proxInput" type="number" min="25" step="25" class="w-full p-2 border rounded-lg" />
+          <p class="text-xs text-gray-500 mt-1">When within this distance of a sighting zone, you’ll get alerts.</p>
+        </div>
+        <div class="flex items-center justify-between">
+          <button id="saveSettings" class="icon-btn bg-gray-900 text-white hover:bg-black">Save</button>
+          <button id="closeSettings" class="icon-btn bg-gray-200 hover:bg-gray-300">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice-modal" id="noticeModal">
+    <div class="card p-5 w-[95%] max-w-sm text-center">
+      <p id="noticeText" class="text-sm"></p>
+      <div class="mt-4 flex items-center justify-center gap-2">
+        <button id="noticeOk" class="icon-btn bg-gray-900 text-white hover:bg-black">OK</button>
+        <button id="enableSoundBtn" class="icon-btn bg-gray-200 hover:bg-gray-300 hidden">Enable Sound</button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="alertAudio" src="https://audio.jukehost.co.uk/GGFavIeARQ1vKbeJIOGxUNnb27PmZt55" loop preload="auto"></audio>
+
+  <script type="module">
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import {getDatabase, ref, get} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+
+    const firebaseConfig={apiKey:"AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",authDomain:"project-ema-998cd.firebaseapp.com",databaseURL:"https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"project-ema-998cd",storageBucket:"project-ema-998cd.firebasestorage.app",messagingSenderId:"356739398551",appId:"1:356739398551:web:df3f900d8d7a07c38e22d2"};
+    const app=initializeApp(firebaseConfig);
+    const db=getDatabase(app);
+
+    const loader=document.getElementById("loader");
+    const zoneBanner=document.getElementById("zoneBanner");
+    const closeZoneBanner=document.getElementById("closeZoneBanner");
+    const settingsBtn=document.getElementById("settingsBtn");
+    const settingsModal=document.getElementById("settingsModal");
+    const proxInput=document.getElementById("proxInput");
+    const saveSettings=document.getElementById("saveSettings");
+    const closeSettings=document.getElementById("closeSettings");
+    const noticeModal=document.getElementById("noticeModal");
+    const noticeText=document.getElementById("noticeText");
+    const noticeOk=document.getElementById("noticeOk");
+    const enableSoundBtn=document.getElementById("enableSoundBtn");
+    const alertAudio=document.getElementById("alertAudio");
+
+    function setCookie(name,value,days){const d=new Date();d.setTime(d.getTime()+days*24*60*60*1000);document.cookie=name+"="+value+";expires="+d.toUTCString()+";path=/"}
+    function getCookie(name){const v=("; "+document.cookie).split("; "+name+"=");if(v.length===2)return v.pop().split(";").shift();return null}
+
+    const defaultProx=100;
+    function loadProx(){const c=getCookie("ema_prox_m");return c?parseInt(c):defaultProx}
+    function saveProx(v){setCookie("ema_prox_m",v.toString(),365)}
+
+    proxInput.value=loadProx().toString();
+    settingsBtn.onclick=()=>settingsModal.classList.add("show");
+    closeSettings.onclick=()=>settingsModal.classList.remove("show");
+    saveSettings.onclick=()=>{const v=Math.max(25,parseInt(proxInput.value||defaultProx));saveProx(v);settingsModal.classList.remove("show")}
+
+    const osm=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"});
+    const esri=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"© Esri"});
+    const map=L.map("map",{center:[7.8731,80.7718],zoom:7,layers:[osm],zoomControl:true});
+    L.control.layers({"OpenStreetMap":osm,"Esri Satellite":esri},{},{collapsed:true}).addTo(map);
+
+    const accidentIcon=L.icon({iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",shadowUrl:"https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34],shadowSize:[41,41]});
+    const redIcon=L.icon({iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",shadowUrl:"https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34],shadowSize:[41,41]});
+    const yellowIcon=L.icon({iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png",shadowUrl:"https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34],shadowSize:[41,41]});
+    const greenIcon=L.icon({iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",shadowUrl:"https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34],shadowSize:[41,41]});
+
+    let userMarker=null,userCircle=null,userLatLng=null,notifyInterval=null,notifyCount=0,inZoneShown=false,ringLayers=[];
+    function clearRings(){ringLayers.forEach(l=>map.removeLayer(l));ringLayers=[]}
+
+    function withinHours(ts,hrs){const now=Date.now();return (now-ts)<=hrs*3600000}
+    function hoursSince(ts){return (Date.now()-ts)/3600000}
+
+    function predictRadiusMeters(ts){const h=hoursSince(ts);const base=300;const perHr=250;const max=4000;return Math.min(base+perHr*Math.max(0,h),max)}
+
+    function requestNotifs(){if("Notification" in window && Notification.permission!=="granted"){Notification.requestPermission()}}
+    requestNotifs()
+
+    function showNotice(msg,showSoundBtn=false){
+      noticeText.textContent=msg;
+      enableSoundBtn.classList.toggle("hidden",!showSoundBtn);
+      noticeModal.classList.add("show");
+    }
+    noticeOk.onclick=()=>noticeModal.classList.remove("show");
+    enableSoundBtn.onclick=async()=>{try{await alertAudio.play()}catch(e){}}
+
+    closeZoneBanner.onclick=()=>zoneBanner.classList.add("hidden");
+
+    function distanceMeters(a,b){return map.distance(a,b)}
+
+    function startProximityNotifications(){
+      if(notifyInterval) return;
+      notifyCount=0;
+      notifyInterval=setInterval(()=>{
+        notifyCount++;
+        if("Notification" in window && Notification.permission==="granted"){
+          new Notification("EMA Alert",{body:"You’re in an elephant sighting zone. Proceed with caution.",icon:"https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png"})
+        }
+        if(notifyCount>=5){clearInterval(notifyInterval);notifyInterval=null}
+      },20000)
+    }
+    function stopProximityNotifications(){if(notifyInterval){clearInterval(notifyInterval);notifyInterval=null}}
+
+    async function loadReports(){
+      const snap=await get(ref(db));
+      let items=[];
+      if(snap.exists()){
+        const data=snap.val();
+        if(data.reports){
+          if(data.reports.sightings){
+            Object.values(data.reports.sightings).forEach(r=>{
+              if(r && r.lat && r.lng && withinHours(r.timestamp||0,15) && !r.fraudstatus){
+                items.push({...r,type:"sighting"})
+              }
+            })
+          }
+          if(data.reports.accidents){
+            Object.values(data.reports.accidents).forEach(r=>{
+              if(r && r.lat && r.lng && withinHours(r.timestamp||0,15) && !r.fraudstatus){
+                items.push({...r,type:"accident"})
+              }
+            })
+          }
+        }
+      }
+      return items
+    }
+
+    function addMarkers(items){
+      clearRings();
+      items.forEach(r=>{
+        const latlng=[r.lat,r.lng];
+        if(r.type==="accident"){
+          const m=L.marker(latlng,{icon:accidentIcon}).addTo(map);
+          m.bindPopup(`<div class="text-sm"><div class="font-semibold mb-1">Accident</div><div>Elephants: ${r.elephants||"—"}</div><div>District: ${r.district||"—"}</div><div>Time: ${r.timestamp?new Date(r.timestamp).toLocaleString():"—"}</div>${r.injHuman?`<div>Human Injured: ${r.humanText||"Yes"}</div>`:""}${r.injElephant?`<div>Elephant Injured: ${r.elephantText||"Yes"}</div>`:""}</div>`)
+        }else{
+          let ico=greenIcon;
+          if((r.danger||"").toLowerCase()==="high") ico=redIcon;
+          else if((r.danger||"").toLowerCase()==="medium") ico=yellowIcon;
+          const m=L.marker(latlng,{icon:ico}).addTo(map);
+          m.bindPopup(`<div class="text-sm"><div class="font-semibold mb-1">Sighting (${r.danger||"—"})</div><div>Elephants: ${r.elephants||"—"}</div><div>District: ${r.district||"—"}</div><div>Time: ${r.timestamp?new Date(r.timestamp).toLocaleString():"—"}</div></div>`);
+          const rad=predictRadiusMeters(r.timestamp||Date.now());
+          const color=(r.danger||"").toLowerCase()==="high"?"#ef4444":(r.danger||"").toLowerCase()==="medium"?"#eab308":"#22c55e";
+          const circle=L.circle(latlng,{radius:rad,color,fillColor:color,fillOpacity:.15,weight:1}).addTo(map);
+          ringLayers.push(circle)
+        }
+      })
+    }
+
+    async function init(){
+      try{
+        const items=await loadReports();
+        addMarkers(items);
+      }catch(e){}
+      loader.style.display="none"
+    }
+
+    function updateUserLocation(){
+      if(!navigator.geolocation) return;
+      navigator.geolocation.watchPosition(pos=>{
+        const lat=pos.coords.latitude,lng=pos.coords.longitude,acc=pos.coords.accuracy;
+        userLatLng=L.latLng(lat,lng);
+        if(!userMarker){
+          userMarker=L.marker([lat,lng],{title:"You"}).addTo(map);
+          userCircle=L.circle([lat,lng],{radius:Math.max(15,acc),color:"#3b82f6",fillColor:"#3b82f6",fillOpacity:.15,weight:1}).addTo(map);
+          map.setView([lat,lng],13)
+        }else{
+          userMarker.setLatLng([lat,lng]);
+          userCircle.setLatLng([lat,lng]);userCircle.setRadius(Math.max(15,acc))
+        }
+        checkZonesProximity()
+      },err=>{}, {enableHighAccuracy:true,maximumAge:5000,timeout:20000})
+    }
+
+    function checkZonesProximity(){
+      if(!userLatLng) return;
+      const proxMeters=loadProx();
+      let inAnyZone=false,withinProx=false,closestDist=null;
+      ringLayers.forEach(c=>{
+        const dist=distanceMeters(userLatLng,c.getLatLng());
+        const edge=Math.max(0,dist - c.getRadius());
+        if(edge<=0){inAnyZone=true}
+        if(dist<=c.getRadius()+proxMeters){withinProx=true;closestDist=closestDist===null?dist:Math.min(closestDist,dist)}
+      })
+      if(inAnyZone && !inZoneShown){
+        zoneBanner.classList.remove("hidden");
+        inZoneShown=true;
+        if("Notification" in window && Notification.permission==="granted"){
+          new Notification("EMA Alert",{body:"You’re in a predicted zone. Proceed with caution.",icon:"https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png"})
+        }
+      }
+      if(!inAnyZone){zoneBanner.classList.add("hidden");inZoneShown=false}
+      if(withinProx){
+        const meters=Math.max(0,closestDist||0);
+        const km=meters/1000;
+        const msg=`You’re ${meters<1000?meters.toFixed(0)+" meters":km.toFixed(2)+" km"} away from an elephant sighting. Proceed with caution.`;
+        showNotice(msg,true);
+        alertAudio.play().catch(()=>{enableSoundBtn.classList.remove("hidden")});
+        startProximityNotifications()
+      }else{
+        stopProximityNotifications();
+        if(!inAnyZone){try{alertAudio.pause()}catch(e){}}
+      }
+    }
+
+    init();
+    updateUserLocation();
+  </script>
+</body>
+</html>
