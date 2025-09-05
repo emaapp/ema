@@ -328,6 +328,7 @@ async function downloadPDF(){
   doc.setFontSize(18);
   doc.text("EMA - Report", 40, 50);
   doc.setFontSize(12);
+  doc.text("This information is downloaded from EMA official servers", 40, 50);
   doc.text("Type: " + (selectedReport.type==="sightings"?"Elephant Sighting":"Accident"), 40, 80);
   doc.text("Time: " + new Date(selectedReport.timestamp).toLocaleString(), 40, 100);
   doc.text("District: " + (selectedReport.district||"—"), 40, 120);
@@ -344,15 +345,10 @@ async function downloadPDF(){
     if(selectedReport.humanText) doc.text("Human Details: " + selectedReport.humanText, 40, 240, {maxWidth:w-80});
     if(selectedReport.elephantText) doc.text("Elephant Details: " + selectedReport.elephantText, 40, 280, {maxWidth:w-80});
   }
-  if(selectedReport.image){
-    try{
-      const img = selectedReport.image;
-      doc.addImage(img, "JPEG", w-220, 60, 180, 120, undefined, "FAST");
-    }catch(e){}
   }
   doc.setTextColor(180,180,180);
   doc.setFontSize(48);
-  doc.text("EMA - Elephant Monitoring App", w/2, h/2, {angle:30, align:"center"});
+  doc.text("       Elephant Monitoring App", w/2, h/2, {angle:30, align:"center"});
   doc.save("EMA_Report.pdf");
 }
 
