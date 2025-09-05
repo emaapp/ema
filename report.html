@@ -1,222 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EMA • Report</title>
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-    html,body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,'Noto Sans',sans-serif}
-    .card{background:#fff;border-radius:1rem;box-shadow:0 10px 25px rgba(0,0,0,.08)}
-    .icon-btn{display:inline-flex;align-items:center;justify-content:center;border-radius:.75rem;padding:.75rem 1rem;font-weight:600}
-    .hidden{display:none}
-    #map,#map2{height:250px;border-radius:0.75rem;z-index:0 !important}
-    .popup{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);z-index:50}
-    .popup.show{display:flex}
-    .popup-card{background:white;border-radius:1rem;padding:1.5rem;max-width:20rem;text-align:center}
-  </style>
-</head>
-<body class="bg-gray-50 min-h-screen text-gray-800">
-<header class="w-full sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-100">
-  <div class="max-w-screen-md mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" class="w-8 h-8" alt="EMA">
-      <span class="font-bold">EMA Report</span>
-    </div>
-    <a href="home.html" class="icon-btn bg-gray-900 text-white hover:bg-black">Home</a>
-  </div>
-</header>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMA • Report</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+      html,
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif
+      }
 
-<main class="max-w-screen-md mx-auto px-4 py-5 space-y-4">
-  <section class="card p-5 space-y-4">
-    <h2 class="text-xl font-semibold">Report an Incident</h2>
-    <div class="flex gap-4">
-      <button id="sightingBtn" class="flex-1 icon-btn bg-blue-600 text-white hover:bg-blue-700">Elephant Sighting</button>
-      <button id="accidentBtn" class="flex-1 icon-btn bg-red-600 text-white hover:bg-red-700">Accident</button>
-    </div>
-  </section>
+      .card {
+        background: #fff;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, .08)
+      }
 
-  <!-- Sighting -->
-  <section id="sightingForm" class="card p-5 space-y-4 hidden">
-    <h3 class="text-lg font-semibold">Elephant Sighting</h3>
-    <div>
-      <label class="text-sm">Location</label>
-      <div id="map"></div>
-      <button id="locateBtn" class="mt-2 icon-btn bg-gray-900 text-white hover:bg-black w-full">Use My Location</button>
-    </div>
-    <div>
-      <label class="text-sm">Number of Elephants</label>
-      <div class="flex items-center gap-2 mt-1">
-        <button id="decElephants" class="icon-btn bg-gray-200">-</button>
-        <span id="elephantCount">1</span>
-        <button id="incElephants" class="icon-btn bg-gray-200">+</button>
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: .75rem;
+        padding: .75rem 1rem;
+        font-weight: 600
+      }
+
+      .hidden {
+        display: none
+      }
+
+      #map,
+      #map2 {
+        height: 250px;
+        border-radius: 0.75rem;
+        z-index: 0 !important
+      }
+
+      .popup {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, .5);
+        z-index: 50
+      }
+
+      .popup.show {
+        display: flex
+      }
+
+      .popup-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        max-width: 20rem;
+        text-align: center
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen text-gray-800">
+    <header class="w-full sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-100">
+      <div class="max-w-screen-md mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <img src="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png" class="w-8 h-8" alt="EMA">
+          <span class="font-bold">EMA Report</span>
+        </div>
+        <a href="home.html" class="icon-btn bg-gray-900 text-white hover:bg-black">Home</a>
+      </div>
+    </header>
+    <main class="max-w-screen-md mx-auto px-4 py-5 space-y-4">
+      <section class="card p-5 space-y-4">
+        <h2 class="text-xl font-semibold">Report an Incident</h2>
+        <div class="flex gap-4">
+          <button id="sightingBtn" class="flex-1 icon-btn bg-blue-600 text-white hover:bg-blue-700">Elephant Sighting</button>
+          <button id="accidentBtn" class="flex-1 icon-btn bg-red-600 text-white hover:bg-red-700">Accident</button>
+        </div>
+      </section>
+      <section id="sightingForm" class="card p-5 space-y-4 hidden">
+        <h3 class="text-lg font-semibold">Elephant Sighting</h3>
+        <div>
+          <label class="text-sm">Location</label>
+          <div id="map"></div>
+          <button id="locateBtn" class="mt-2 icon-btn bg-gray-900 text-white hover:bg-black w-full">Use My Location</button>
+        </div>
+        <div>
+          <label class="text-sm">Number of Elephants</label>
+          <div class="flex items-center gap-2 mt-1">
+            <button id="decElephants" class="icon-btn bg-gray-200">-</button>
+            <span id="elephantCount">1</span>
+            <button id="incElephants" class="icon-btn bg-gray-200">+</button>
+          </div>
+        </div>
+        <div>
+          <label class="text-sm">Danger Level</label>
+          <select id="dangerLevel" class="w-full p-2 border rounded-lg">
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm">District</label>
+          <input id="sightingDistrict" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+        </div>
+        <div>
+          <label class="text-sm">Image</label>
+          <input type="file" id="sightingImage" accept="image/*" class="w-full p-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="text-sm">Reporter Name</label>
+          <input id="sightingName" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+        </div>
+        <div>
+          <label class="text-sm">Phone</label>
+          <input id="sightingPhone" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+        </div>
+        <button id="submitSighting" class="icon-btn bg-blue-600 text-white hover:bg-blue-700 w-full">Submit</button>
+      </section>
+      <section id="accidentForm" class="card p-5 space-y-4 hidden">
+        <h3 class="text-lg font-semibold">Accident</h3>
+        <div>
+          <label class="text-sm">Location</label>
+          <div id="map2"></div>
+          <button id="locateBtn2" class="mt-2 icon-btn bg-gray-900 text-white hover:bg-black w-full">Use My Location</button>
+        </div>
+        <div>
+          <label class="text-sm">Number of Elephants</label>
+          <div class="flex items-center gap-2 mt-1">
+            <button id="decElephants2" class="icon-btn bg-gray-200">-</button>
+            <span id="elephantCount2">1</span>
+            <button id="incElephants2" class="icon-btn bg-gray-200">+</button>
+          </div>
+        </div>
+        <div>
+          <label class="text-sm">Injured To</label>
+          <div class="flex gap-4">
+            <label>
+              <input type="checkbox" id="injHuman"> Human </label>
+            <label>
+              <input type="checkbox" id="injElephant"> Elephant </label>
+          </div>
+        </div>
+        <div id="humanDetails" class="hidden">
+          <label class="text-sm">Human Details</label>
+          <textarea id="humanText" class="w-full p-2 border rounded-lg"></textarea>
+        </div>
+        <div id="elephantDetails" class="hidden">
+          <label class="text-sm">Elephant Details</label>
+          <textarea id="elephantText" class="w-full p-2 border rounded-lg"></textarea>
+        </div>
+        <div>
+          <label class="text-sm">Image</label>
+          <input type="file" id="accidentImage" accept="image/*" class="w-full p-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="text-sm">Reporter Name</label>
+          <input id="accidentName" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+        </div>
+        <div>
+          <label class="text-sm">Phone</label>
+          <input id="accidentPhone" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+        </div>
+        <div>
+          <label class="text-sm">District</label>
+          <input id="accidentDistrict" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+        </div>
+        <button id="submitAccident" class="icon-btn bg-red-600 text-white hover:bg-red-700 w-full">Submit</button>
+      </section>
+    </main>
+    <div id="popup" class="popup">
+      <div class="popup-card">
+        <p id="popupMsg">Message</p>
+        <button onclick="document.getElementById('popup').classList.remove('show')" class="mt-4 icon-btn bg-gray-900 text-white hover:bg-black w-full">Close</button>
       </div>
     </div>
-    <div>
-      <label class="text-sm">Danger Level</label>
-      <select id="dangerLevel" class="w-full p-2 border rounded-lg">
-        <option>High</option>
-        <option>Medium</option>
-        <option>Low</option>
-      </select>
-    </div>
-    <div>
-      <label class="text-sm">District</label>
-      <input id="sightingDistrict" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
-    </div>
-    <div>
-      <label class="text-sm">Image</label>
-      <input type="file" id="sightingImage" accept="image/*" class="w-full p-2 border rounded-lg">
-    </div>
-    <div>
-      <label class="text-sm">Reporter Name</label>
-      <input id="sightingName" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
-    </div>
-    <div>
-      <label class="text-sm">Phone</label>
-      <input id="sightingPhone" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
-    </div>
-    <button id="submitSighting" class="icon-btn bg-blue-600 text-white hover:bg-blue-700 w-full">Submit</button>
-  </section>
+    <script type="module">
+      import {
+        initializeApp
+      } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        push,
+        set,
+        get,
+        child
+      } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+      const firebaseConfig = {
+        apiKey: "AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
+        authDomain: "project-ema-998cd.firebaseapp.com",
+        databaseURL: "https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "project-ema-998cd",
+        storageBucket: "project-ema-998cd.firebasestorage.app",
+        messagingSenderId: "356739398551",
+        appId: "1:356739398551:web:df3f900d8d7a07c38e22d2"
+      };
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
 
-  <!-- Accident -->
-  <section id="accidentForm" class="card p-5 space-y-4 hidden">
-    <h3 class="text-lg font-semibold">Accident</h3>
-    <div>
-      <label class="text-sm">Location</label>
-      <div id="map2"></div>
-      <button id="locateBtn2" class="mt-2 icon-btn bg-gray-900 text-white hover:bg-black w-full">Use My Location</button>
-    </div>
-    <div>
-      <label class="text-sm">Number of Elephants</label>
-      <div class="flex items-center gap-2 mt-1">
-        <button id="decElephants2" class="icon-btn bg-gray-200">-</button>
-        <span id="elephantCount2">1</span>
-        <button id="incElephants2" class="icon-btn bg-gray-200">+</button>
-      </div>
-    </div>
-    <div>
-      <label class="text-sm">Injured To</label>
-      <div class="flex gap-4">
-        <label><input type="checkbox" id="injHuman"> Human</label>
-        <label><input type="checkbox" id="injElephant"> Elephant</label>
-      </div>
-    </div>
-    <div id="humanDetails" class="hidden">
-      <label class="text-sm">Human Details</label>
-      <textarea id="humanText" class="w-full p-2 border rounded-lg"></textarea>
-    </div>
-    <div id="elephantDetails" class="hidden">
-      <label class="text-sm">Elephant Details</label>
-      <textarea id="elephantText" class="w-full p-2 border rounded-lg"></textarea>
-    </div>
-    <div>
-      <label class="text-sm">Image</label>
-      <input type="file" id="accidentImage" accept="image/*" class="w-full p-2 border rounded-lg">
-    </div>
-    <div>
-      <label class="text-sm">Reporter Name</label>
-      <input id="accidentName" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
-    </div>
-    <div>
-      <label class="text-sm">Phone</label>
-      <input id="accidentPhone" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
-    </div>
-    <div>
-      <label class="text-sm">District</label>
-      <input id="accidentDistrict" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
-    </div>
-    <button id="submitAccident" class="icon-btn bg-red-600 text-white hover:bg-red-700 w-full">Submit</button>
-  </section>
-</main>
+      function showPopup(msg) {
+        document.getElementById("popupMsg").textContent = msg;
+        document.getElementById("popup").classList.add("show")
+      }
+      let currentLat = null,
+        currentLng = null;
+      let map, marker, map2, marker2;
 
-<div id="popup" class="popup">
-  <div class="popup-card">
-    <p id="popupMsg">Message</p>
-    <button onclick="document.getElementById('popup').classList.remove('show')" class="mt-4 icon-btn bg-gray-900 text-white hover:bg-black w-full">Close</button>
-  </div>
-</div>
+      function initMap() {
+        map = L.map('map').setView([7.87, 80.77], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        map.on('click', e => {
+          currentLat = e.latlng.lat;
+          currentLng = e.latlng.lng;
+          if (marker) map.removeLayer(marker);
+          marker = L.marker([currentLat, currentLng]).addTo(map)
+        });
+        map2 = L.map('map2').setView([7.87, 80.77], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map2);
+        map2.on('click', e => {
+          currentLat = e.latlng.lat;
+          currentLng = e.latlng.lng;
+          if (marker2) map2.removeLayer(marker2);
+          marker2 = L.marker([currentLat, currentLng]).addTo(map2)
+        });
+      }
+      initMap();
+      document.getElementById("sightingBtn").onclick = () => {
+        document.getElementById("sightingForm").classList.remove("hidden");
+        document.getElementById("accidentForm").classList.add("hidden");
+        setTimeout(() => map.invalidateSize(), 300)
+      };
+      document.getElementById("accidentBtn").onclick = () => {
+        document.getElementById("accidentForm").classList.remove("hidden");
+        document.getElementById("sightingForm").classList.add("hidden");
+        setTimeout(() => map2.invalidateSize(), 300)
+      };
+      document.getElementById("locateBtn").onclick = () => {
+        navigator.geolocation.getCurrentPosition(pos => {
+          currentLat = pos.coords.latitude;
+          currentLng = pos.coords.longitude;
+          map.setView([currentLat, currentLng], 13);
+          if (marker) map.removeLayer(marker);
+          marker = L.marker([currentLat, currentLng]).addTo(map)
+        })
+      };
+      document.getElementById("locateBtn2").onclick = () => {
+        navigator.geolocation.getCurrentPosition(pos => {
+          currentLat = pos.coords.latitude;
+          currentLng = pos.coords.longitude;
+          map2.setView([currentLat, currentLng], 13);
+          if (marker2) map2.removeLayer(marker2);
+          marker2 = L.marker([currentLat, currentLng]).addTo(map2)
+        })
+      };
+      let count1 = 1,
+        count2 = 1;
+      document.getElementById("incElephants").onclick = () => {
+        document.getElementById("elephantCount").textContent = ++count1
+      };
+      document.getElementById("decElephants").onclick = () => {
+        if (count1 > 1) document.getElementById("elephantCount").textContent = --count1
+      };
+      document.getElementById("incElephants2").onclick = () => {
+        document.getElementById("elephantCount2").textContent = ++count2
+      };
+      document.getElementById("decElephants2").onclick = () => {
+        if (count2 > 1) document.getElementById("elephantCount2").textContent = --count2
+      };
+      document.getElementById("injHuman").onchange = e => {
+        document.getElementById("humanDetails").classList.toggle("hidden", !e.target.checked)
+      };
+      document.getElementById("injElephant").onchange = e => {
+        document.getElementById("elephantDetails").classList.toggle("hidden", !e.target.checked)
+      };
+      async function loadUser() {
+        const emaUserId = localStorage.getItem("emaUserId");
+        if (!emaUserId) {
+          showPopup("No user logged in");
+          return
+        }
+        const snap = await get(child(ref(db), "users/" + emaUserId));
+        if (snap.exists()) {
+          const user = snap.val();
+          document.getElementById("sightingName").value = user.name || "—";
+          document.getElementById("accidentName").value = user.name || "—";
+          document.getElementById("sightingPhone").value = user.phone || "—";
+          document.getElementById("accidentPhone").value = user.phone || "—";
+          document.getElementById("sightingDistrict").value = user.district || "Unknown";
+          document.getElementById("accidentDistrict").value = user.district || "Unknown";
+        } else {
+          showPopup("User not found in database")
+        }
+      }
+      loadUser();
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getDatabase, ref, push, set, get, child } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
-
-const firebaseConfig={
-  apiKey:"AIzaSyAIqO8zSyUiYYHe-vBMozYYrQs6Br8rt68",
-  authDomain:"project-ema-998cd.firebaseapp.com",
-  databaseURL:"https://project-ema-998cd-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"project-ema-998cd",
-  storageBucket:"project-ema-998cd.firebasestorage.app",
-  messagingSenderId:"356739398551",
-  appId:"1:356739398551:web:df3f900d8d7a07c38e22d2"
-};
-const app=initializeApp(firebaseConfig);
-const db=getDatabase(app);
-
-function showPopup(msg){document.getElementById("popupMsg").textContent=msg;document.getElementById("popup").classList.add("show")}
-
-let currentLat=null,currentLng=null;
-let map,marker,map2,marker2;
-function initMap(){
-  map=L.map('map').setView([7.87,80.77],7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-  map.on('click',e=>{currentLat=e.latlng.lat;currentLng=e.latlng.lng;if(marker)map.removeLayer(marker);marker=L.marker([currentLat,currentLng]).addTo(map)});
-  map2=L.map('map2').setView([7.87,80.77],7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map2);
-  map2.on('click',e=>{currentLat=e.latlng.lat;currentLng=e.latlng.lng;if(marker2)map2.removeLayer(marker2);marker2=L.marker([currentLat,currentLng]).addTo(map2)});
-}
-initMap();
-
-document.getElementById("sightingBtn").onclick=()=>{document.getElementById("sightingForm").classList.remove("hidden");document.getElementById("accidentForm").classList.add("hidden");setTimeout(()=>map.invalidateSize(),300)};
-document.getElementById("accidentBtn").onclick=()=>{document.getElementById("accidentForm").classList.remove("hidden");document.getElementById("sightingForm").classList.add("hidden");setTimeout(()=>map2.invalidateSize(),300)};
-
-document.getElementById("locateBtn").onclick=()=>{navigator.geolocation.getCurrentPosition(pos=>{currentLat=pos.coords.latitude;currentLng=pos.coords.longitude;map.setView([currentLat,currentLng],13);if(marker)map.removeLayer(marker);marker=L.marker([currentLat,currentLng]).addTo(map)})};
-document.getElementById("locateBtn2").onclick=()=>{navigator.geolocation.getCurrentPosition(pos=>{currentLat=pos.coords.latitude;currentLng=pos.coords.longitude;map2.setView([currentLat,currentLng],13);if(marker2)map2.removeLayer(marker2);marker2=L.marker([currentLat,currentLng]).addTo(map2)})};
-
-let count1=1,count2=1;
-document.getElementById("incElephants").onclick=()=>{document.getElementById("elephantCount").textContent=++count1};
-document.getElementById("decElephants").onclick=()=>{if(count1>1)document.getElementById("elephantCount").textContent=--count1};
-document.getElementById("incElephants2").onclick=()=>{document.getElementById("elephantCount2").textContent=++count2};
-document.getElementById("decElephants2").onclick=()=>{if(count2>1)document.getElementById("elephantCount2").textContent=--count2};
-
-document.getElementById("injHuman").onchange=e=>{document.getElementById("humanDetails").classList.toggle("hidden",!e.target.checked)};
-document.getElementById("injElephant").onchange=e=>{document.getElementById("elephantDetails").classList.toggle("hidden",!e.target.checked)};
-
-// fetch logged in user info
-const emaUserId=localStorage.getItem("emaUserId");
-if(!emaUserId){showPopup("No user logged in");}
-else{
-  const snap=await get(child(ref(db),"users/"+emaUserId));
-  if(snap.exists()){
-    const user=snap.val();
-    document.getElementById("sightingName").value=user.name||"—";
-    document.getElementById("accidentName").value=user.name||"—";
-    document.getElementById("sightingPhone").value=user.phone||"—";
-    document.getElementById("accidentPhone").value=user.phone||"—";
-    document.getElementById("sightingDistrict").value=user.district||"Unknown";
-    document.getElementById("accidentDistrict").value=user.district||"Unknown";
-  }else{showPopup("User not found in database");}
-}
-
-function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
-async function pushReport(path,data){const newRef=push(ref(db,path));await set(newRef,data);if(Notification.permission==="granted"){new Notification("New Report Uploaded in "+(data.district||"Unknown")+" District, Check it on EMA app")}}
-
-document.getElementById("submitSighting").onclick=async()=>{
-  if(!currentLat||!currentLng){showPopup("Please select a location");return}
-  let img=document.getElementById("sightingImage").files[0];let img64=img?await fileToBase64(img):null;
-  let report={lat:currentLat,lng:currentLng,elephants:count1,danger:document.getElementById("dangerLevel").value,district:document.getElementById("sightingDistrict").value,name:document.getElementById("sightingName").value,phone:document.getElementById("sightingPhone").value,image:img64,timestamp:Date.now()};
-  await pushReport("reports/sightings",report);showPopup("Sighting Report Submitted")};
-
-document.getElementById("submitAccident").onclick=async()=>{
-  if(!currentLat||!currentLng){showPopup("Please select a location");return}
-  let img=document.getElementById("accidentImage").files[0];let img64=img?await fileToBase64(img):null;
-  let report={lat:currentLat,lng:currentLng,elephants:count2,injHuman:document.getElementById("injHuman").checked,humanText:document.getElementById("humanText").value||"",injElephant:document.getElementById("injElephant").checked,elephantText:document.getElementById("elephantText").value||"",district:document.getElementById("accidentDistrict").value,name:document.getElementById("accidentName").value,phone:document.getElementById("accidentPhone").value,image:img64,timestamp:Date.now()};
-  await pushReport("reports/accidents",report);showPopup("Accident Report Submitted")};
-
-if(Notification.permission!=="granted"){Notification.requestPermission()}
-</script>
-</body>
+      function fileToBase64(file) {
+        return new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = () => res(r.result);
+          r.onerror = rej;
+          r.readAsDataURL(file)
+        })
+      }
+      async function pushReport(path, data) {
+        const newRef = push(ref(db, path));
+        await set(newRef, data);
+        showPopup("Report submitted successfully");
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("EMA", {
+            body: "New report submitted"
+          })
+        }
+      }
+      document.getElementById("submitSighting").onclick = async () => {
+        if (!currentLat || !currentLng) {
+          showPopup("Please select a location");
+          return
+        }
+        let img = document.getElementById("sightingImage").files[0];
+        let img64 = img ? await fileToBase64(img) : null;
+        let report = {
+          lat: currentLat,
+          lng: currentLng,
+          elephants: count1,
+          danger: document.getElementById("dangerLevel").value,
+          district: document.getElementById("sightingDistrict").value,
+          name: document.getElementById("sightingName").value,
+          phone: document.getElementById("sightingPhone").value,
+          image: img64,
+          timestamp: Date.now()
+        };
+        await pushReport("reports/sightings", report)
+      };
+      document.getElementById("submitAccident").onclick = async () => {
+        if (!currentLat || !currentLng) {
+          showPopup("Please select a location");
+          return
+        }
+        let img = document.getElementById("accidentImage").files[0];
+        let img64 = img ? await fileToBase64(img) : null;
+        let report = {
+          lat: currentLat,
+          lng: currentLng,
+          elephants: count2,
+          injHuman: document.getElementById("injHuman").checked,
+          humanText: document.getElementById("humanText").value || "",
+          injElephant: document.getElementById("injElephant").checked,
+          elephantText: document.getElementById("elephantText").value || "",
+          district: document.getElementById("accidentDistrict").value,
+          name: document.getElementById("accidentName").value,
+          phone: document.getElementById("accidentPhone").value,
+          image: img64,
+          timestamp: Date.now()
+        };
+        await pushReport("reports/accidents", report)
+      };
+      if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission()
+      }
+    </script>
+  </body>
 </html>
