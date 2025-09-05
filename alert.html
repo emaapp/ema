@@ -345,7 +345,7 @@ async function downloadPDF(){
     if(selectedReport.humanText) doc.text("Human Details: " + selectedReport.humanText, 40, 240, {maxWidth:w-80});
     if(selectedReport.elephantText) doc.text("Elephant Details: " + selectedReport.elephantText, 40, 280, {maxWidth:w-80});
   }
-  }
+  
   doc.setTextColor(180,180,180);
   doc.setFontSize(48);
   doc.text("       Elephant Monitoring App", w/2, h/2, {angle:30, align:"center"});
