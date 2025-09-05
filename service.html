@@ -3,6 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <title>EMA • Service Bot</title>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+      .then(() => console.log("Service Worker Registered"))
+      .catch(err => console.error("SW reg failed", err));
+  }
+</script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/emaapp/ema/refs/heads/main/logo/logo_main.png">
     <script src="https://cdn.tailwindcss.com"></script>
