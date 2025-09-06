@@ -1,4 +1,4 @@
-const CACHE_NAME = "ema-cache-v2";  // bumped version
+const CACHE_NAME = "ema-cache-v3";  
 const FILES_TO_CACHE = [
   "index.html",
   "home.html",
