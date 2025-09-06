@@ -1,4 +1,4 @@
-const CACHE_NAME = "ema-cache-v1";
+const CACHE_NAME = "ema-cache-v2";  // bumped version
 const FILES_TO_CACHE = [
   "index.html",
   "home.html",
@@ -20,7 +20,11 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.map(key => key !== CACHE_NAME && caches.delete(key)))
+      Promise.all(keys.map(key => {
+        if (key !== CACHE_NAME) {
+          return caches.delete(key);
+        }
+      }))
     )
   );
   self.clients.claim();
